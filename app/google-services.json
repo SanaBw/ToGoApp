@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "985638010053",
+    "firebase_url": "https://togo-8cac7.firebaseio.com",
+    "project_id": "togo-8cac7",
+    "storage_bucket": "togo-8cac7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:985638010053:android:6f4a6181aa4185df9f04ac",
+        "android_client_info": {
+          "package_name": "com.sanida.togoapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "985638010053-e5tucvphi9is32f4m94b1pqd3mksm6e6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkxjX2sk-AQoPrNREr38nCpQ2sjD8RjrU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "985638010053-e5tucvphi9is32f4m94b1pqd3mksm6e6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
