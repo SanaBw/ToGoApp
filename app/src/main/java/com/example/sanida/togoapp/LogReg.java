@@ -21,6 +21,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,10 +38,9 @@ public class LogReg extends AppCompatActivity {
     EditText logEmail, logPassword, name, surname, email, password;
     TextView logreg, reglog;
     Button logIn, register;
-    String userEmail, userPw, newUserEmail, newUserPw, newUserName, newUserSurname;
+    String userEmail, userPw, newUserEmail, newUserPw;
     Boolean userExists;
 
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
     FirebaseAuth auth = FirebaseAuth.getInstance();
     DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
 
@@ -52,13 +52,16 @@ public class LogReg extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.log_reg);
 
+        if (auth.getCurrentUser()!=null) {
+            Intent i = new Intent(LogReg.this, MainScreen.class);
+            startActivity(i);
+        }
+
         vf = (ViewFlipper) findViewById(R.id.viewFlipper);
 
         logEmail = findViewById(R.id.logEmailText);
         logPassword = findViewById(R.id.logPwText);
         logreg = findViewById(R.id.logregText);
-        name = findViewById(R.id.nameText);
-        surname = findViewById(R.id.surnameText);
         email = findViewById(R.id.emailText);
         password = findViewById(R.id.pwText);
         reglog = findViewById(R.id.reglogText);
@@ -102,10 +105,8 @@ public class LogReg extends AppCompatActivity {
     public void registerUser() {
         newUserEmail = email.getText().toString();
         newUserPw = password.getText().toString();
-        newUserName = name.getText().toString();
-        newUserSurname = surname.getText().toString();
 
-        if (newUserEmail.isEmpty() || newUserPw.isEmpty() || newUserName.isEmpty() || newUserSurname.isEmpty()) {
+        if (newUserEmail.isEmpty() || newUserPw.isEmpty()) {
             Toast.makeText(getApplicationContext(), "Please fill out every field", Toast.LENGTH_LONG).show();
         } else if (!newUserEmail.contains("@")){
             Toast.makeText(getApplicationContext(), "Please enter a valid e-mail address", Toast.LENGTH_LONG).show();
@@ -118,7 +119,8 @@ public class LogReg extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
-                                Toast.makeText(getApplicationContext(), "Registration successful!", Toast.LENGTH_LONG).show();
+                                sendVerificationEmail();
+                                Toast.makeText(getApplicationContext(), "Registration successful! Please check your inbox", Toast.LENGTH_LONG).show();
                                 progressBar.setVisibility(View.GONE);
                                 vf.showNext();
                             }
@@ -148,11 +150,15 @@ public class LogReg extends AppCompatActivity {
                                 Log.w("FAILURE: ", "Error logging in");
                                 Toast.makeText(getApplicationContext(), "Wrong e-mail or password! Please try again", Toast.LENGTH_LONG).show();
                                 progressBar.setVisibility(View.GONE);
+                            } else if (!auth.getCurrentUser().isEmailVerified()){
+                                Toast.makeText(getApplicationContext(), "Please verify your e-mail. Check your inbox!", Toast.LENGTH_LONG).show();
+                                progressBar.setVisibility(View.GONE);
                             } else {
                                 Toast.makeText(getApplicationContext(), "Connecting. Please wait...", Toast.LENGTH_LONG).show();
                                 Intent i = new Intent(LogReg.this, MainScreen.class);
                                 startActivity(i);
                                 finish();
+
                             }
                         }
                     });
@@ -180,5 +186,32 @@ public class LogReg extends AppCompatActivity {
                 }
         );
         return userExists;
+    }
+
+
+    private void sendVerificationEmail()
+    {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        user.sendEmailVerification()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            // email sent
+                            FirebaseAuth.getInstance().signOut();
+                        }
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(), "Registration failed! Please check your connection and try again", Toast.LENGTH_LONG).show();
+                            //restart this activity
+                            overridePendingTransition(0, 0);
+                            finish();
+                            overridePendingTransition(0, 0);
+                            startActivity(getIntent());
+
+                        }
+                    }
+                });
     }
 }
