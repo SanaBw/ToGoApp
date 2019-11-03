@@ -71,7 +71,7 @@ public class MainScreen extends AppCompatActivity {
                         break;
                     }
                     case (R.id.profileItem): {
-                        System.out.println("profile");
+                        ft.replace(R.id.fragmentFrame, new ProfileFragment());
                         break;
                     }
                     case (R.id.chat): {
