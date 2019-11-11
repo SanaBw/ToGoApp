@@ -33,17 +33,6 @@ public class MainScreen extends AppCompatActivity {
         ft.replace(R.id.fragmentFrame, new HomeFragment());
         ft.commit();
 
-        /*signOut = findViewById(R.id.signOut);
-
-        signOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FirebaseUser user = auth.getCurrentUser();
-                auth.signOut();
-                setContentView(R.layout.log_reg);
-            }
-        });*/
-
         FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
 
             @Override

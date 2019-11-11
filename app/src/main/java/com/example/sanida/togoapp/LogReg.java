@@ -3,6 +3,7 @@ package com.example.sanida.togoapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,11 +28,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
+
 
 public class LogReg extends AppCompatActivity {
 
@@ -43,6 +44,7 @@ public class LogReg extends AppCompatActivity {
 
     FirebaseAuth auth = FirebaseAuth.getInstance();
     DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
 
     ViewFlipper vf;
     ProgressBar progressBar;
@@ -191,7 +193,7 @@ public class LogReg extends AppCompatActivity {
 
     private void sendVerificationEmail()
     {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         user.sendEmailVerification()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -199,6 +201,7 @@ public class LogReg extends AppCompatActivity {
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             // email sent
+                            writeNewUser("first", "lst", userEmail, user.getUid());
                             FirebaseAuth.getInstance().signOut();
                         }
                         else
@@ -214,4 +217,34 @@ public class LogReg extends AppCompatActivity {
                     }
                 });
     }
+
+    private void writeNewUser(String firstName, String lastName, String email, String id) {
+        User user = new User(firstName, lastName, email, id);
+
+        Map<String, Object> newUser = new HashMap<>();
+        newUser.put("First Name", firstName);
+        newUser.put("Last Name", lastName);
+        newUser.put("E-mail", email);
+        firebaseFirestore.collection("users").document("info").set(newUser)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(LogReg.this, "User Registered",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(LogReg.this, "ERROR" +e.toString(),
+                                Toast.LENGTH_SHORT).show();
+                        Log.d("TAG", e.toString());
+                    }
+                });
+
+    }
+
+
+
 }
+

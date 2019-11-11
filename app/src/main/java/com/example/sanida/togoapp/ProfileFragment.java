@@ -14,11 +14,15 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -32,27 +36,39 @@ public class ProfileFragment extends Fragment {
 
     ImageView profileImg;
     View view;
+    Button signOutBtn, saveBtn, editBtn;
+    EditText nameTxt, emailTxt, passwordTxt;
 
     private Uri filePath;
     FirebaseStorage storage;
     StorageReference storageReference;
+    FirebaseAuth auth = FirebaseAuth.getInstance();
 
     private final int PICK_IMAGE_REQUEST = 71;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-         view = inflater.inflate(R.layout.fragment_profile, container, false);
+        view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         profileImg = view.findViewById(R.id.profileImg);
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
+        signOutBtn = view.findViewById(R.id.signOutBtn);
+        saveBtn = view.findViewById(R.id.saveBtn);
+        nameTxt = view.findViewById(R.id.nameTxt);
+        emailTxt = view.findViewById(R.id.emailTxt);
+        editBtn = view.findViewById(R.id.editBtn);
+        passwordTxt = view.findViewById(R.id.passwordTxt);
+
+        editBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nameTxt.setEnabled(true);
+                emailTxt.setEnabled(true);
+                passwordTxt.setEnabled(true);
+            }
+        });
 
         profileImg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,6 +76,26 @@ public class ProfileFragment extends Fragment {
                 chooseImage();
             }
         });
+
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        signOutBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                FirebaseUser user = auth.getCurrentUser();
+                auth.signOut();
+                getActivity().onBackPressed();
+                Intent i = new Intent(getContext(), LogReg.class);
+                startActivity(i);
+            }
+        });
+
         return view;
     }
 
