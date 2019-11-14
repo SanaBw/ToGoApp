@@ -10,7 +10,9 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,9 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -43,6 +48,7 @@ public class ProfileFragment extends Fragment {
     FirebaseStorage storage;
     StorageReference storageReference;
     FirebaseAuth auth = FirebaseAuth.getInstance();
+    DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
 
     private final int PICK_IMAGE_REQUEST = 71;
 
@@ -64,9 +70,16 @@ public class ProfileFragment extends Fragment {
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                nameTxt.setEnabled(true);
-                emailTxt.setEnabled(true);
-                passwordTxt.setEnabled(true);
+                if (!editBtn.isEnabled()){
+                    nameTxt.setEnabled(true);
+                    emailTxt.setEnabled(true);
+                    passwordTxt.setEnabled(true);
+                } else {
+                    nameTxt.setEnabled(false);
+                    emailTxt.setEnabled(false);
+                    passwordTxt.setEnabled(false);
+                }
+
             }
         });
 
@@ -132,11 +145,14 @@ public class ProfileFragment extends Fragment {
                 progressDialog.setTitle("Uploading...");
                 progressDialog.show();
 
-                StorageReference ref = storageReference.child("images/"+ UUID.randomUUID().toString());
+                final String imgId= UUID.randomUUID().toString();
+
+                StorageReference ref = storageReference.child("images/"+ imgId);
                 ref.putFile(filePath)
                         .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                addPhotoPath(imgId);
                                 progressDialog.dismiss();
                             }
                         })
@@ -155,6 +171,18 @@ public class ProfileFragment extends Fragment {
                             }
                         });
             }
+        }
+
+        private void addPhotoPath(String imgId){
+
+
+                dbRef.child("users").child(auth.getUid()).child("photo").setValue(imgId).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getContext(), "There was an error adding your photo. Please try again.", Toast.LENGTH_LONG).show();
+                }
+            });
+
         }
 
 

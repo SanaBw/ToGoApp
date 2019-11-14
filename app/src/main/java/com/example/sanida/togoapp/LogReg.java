@@ -3,7 +3,6 @@ package com.example.sanida.togoapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,7 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-import com.google.android.gms.common.internal.Constants;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -36,15 +34,14 @@ import java.util.Map;
 
 public class LogReg extends AppCompatActivity {
 
-    EditText logEmail, logPassword, name, surname, email, password;
-    TextView logreg, reglog;
+    EditText logEmail, logPassword, name, email, password;
+    TextView logreg, reglog, resetPw;
     Button logIn, register;
-    String userEmail, userPw, newUserEmail, newUserPw;
+    String userEmail, userPw, newUserName, newUserEmail, newUserPw;
     Boolean userExists;
 
     FirebaseAuth auth = FirebaseAuth.getInstance();
     DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
 
     ViewFlipper vf;
     ProgressBar progressBar;
@@ -54,7 +51,7 @@ public class LogReg extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.log_reg);
 
-        if (auth.getCurrentUser()!=null) {
+        if (auth.getCurrentUser() != null) {
             Intent i = new Intent(LogReg.this, MainScreen.class);
             startActivity(i);
         }
@@ -63,7 +60,9 @@ public class LogReg extends AppCompatActivity {
 
         logEmail = findViewById(R.id.logEmailText);
         logPassword = findViewById(R.id.logPwText);
+        resetPw = findViewById(R.id.resetPwTxt);
         logreg = findViewById(R.id.logregText);
+        name = findViewById(R.id.nameText);
         email = findViewById(R.id.emailText);
         password = findViewById(R.id.pwText);
         reglog = findViewById(R.id.reglogText);
@@ -102,19 +101,30 @@ public class LogReg extends AppCompatActivity {
                 loginUser();
             }
         });
+
+        resetPw.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                resetUserPw();
+            }
+        });
     }
 
     public void registerUser() {
         newUserEmail = email.getText().toString();
         newUserPw = password.getText().toString();
+        newUserName = name.getText().toString();
 
         if (newUserEmail.isEmpty() || newUserPw.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Please fill out every field", Toast.LENGTH_LONG).show();
-        } else if (!newUserEmail.contains("@")){
-            Toast.makeText(getApplicationContext(), "Please enter a valid e-mail address", Toast.LENGTH_LONG).show();
-        } else if (newUserPw.length()<5){
-            Toast.makeText(getApplicationContext(), "Password needs be at least 5 characters long", Toast.LENGTH_LONG).show();
-        }else if (!userExists(newUserEmail)) {
+            Toast.makeText(getApplicationContext(), "Please fill out every field.", Toast.LENGTH_LONG).show();
+        } else if (!newUserEmail.contains("@")) {
+            Toast.makeText(getApplicationContext(), "Please enter a valid e-mail address.", Toast.LENGTH_LONG).show();
+        } else if (newUserPw.length() < 5) {
+            Toast.makeText(getApplicationContext(), "Password needs be at least 5 characters long.", Toast.LENGTH_LONG).show();
+        } else if (userExists(newUserEmail)) {
+            Toast.makeText(getApplicationContext(), "User exists. Choose another e-mail or reset your password.", Toast.LENGTH_LONG).show();
+            progressBar.setVisibility(View.GONE);
+        } else if (!userExists(newUserEmail)) {
             progressBar.setVisibility(View.VISIBLE);
             auth.createUserWithEmailAndPassword(newUserEmail, newUserPw)
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -122,12 +132,12 @@ public class LogReg extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 sendVerificationEmail();
-                                Toast.makeText(getApplicationContext(), "Registration successful! Please check your inbox", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Registration successful! Please check your inbox.", Toast.LENGTH_LONG).show();
                                 progressBar.setVisibility(View.GONE);
                                 vf.showNext();
-                            }
-                            else {
-                                Toast.makeText(getApplicationContext(), "Registration failed! Please check your connection and try again", Toast.LENGTH_LONG).show();
+                                logEmail.setText(newUserEmail);
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Registration failed! Please check your connection and try again.", Toast.LENGTH_LONG).show();
                                 progressBar.setVisibility(View.GONE);
                             }
                         }
@@ -142,7 +152,7 @@ public class LogReg extends AppCompatActivity {
         userPw = logPassword.getText().toString();
 
         if (userEmail.isEmpty() || userPw.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Please fill out every field", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Please fill out every field.", Toast.LENGTH_LONG).show();
         } else {
             auth.signInWithEmailAndPassword(userEmail, userPw)
                     .addOnCompleteListener(LogReg.this, new OnCompleteListener<AuthResult>() {
@@ -150,9 +160,9 @@ public class LogReg extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (!task.isSuccessful()) {
                                 Log.w("FAILURE: ", "Error logging in");
-                                Toast.makeText(getApplicationContext(), "Wrong e-mail or password! Please try again", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Wrong e-mail or password! Please try again.", Toast.LENGTH_LONG).show();
                                 progressBar.setVisibility(View.GONE);
-                            } else if (!auth.getCurrentUser().isEmailVerified()){
+                            } else if (!auth.getCurrentUser().isEmailVerified()) {
                                 Toast.makeText(getApplicationContext(), "Please verify your e-mail. Check your inbox!", Toast.LENGTH_LONG).show();
                                 progressBar.setVisibility(View.GONE);
                             } else {
@@ -174,7 +184,6 @@ public class LogReg extends AppCompatActivity {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
-                            Toast.makeText(getApplicationContext(), "E-mail already exists", Toast.LENGTH_SHORT).show();
                             userExists = true;
                         } else {
                             userExists = false;
@@ -191,8 +200,7 @@ public class LogReg extends AppCompatActivity {
     }
 
 
-    private void sendVerificationEmail()
-    {
+    private void sendVerificationEmail() {
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         user.sendEmailVerification()
@@ -201,12 +209,10 @@ public class LogReg extends AppCompatActivity {
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             // email sent
-                            writeNewUser("first", "lst", userEmail, user.getUid());
+                            writeNewUser(newUserName, newUserEmail, user.getUid());
                             FirebaseAuth.getInstance().signOut();
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(), "Registration failed! Please check your connection and try again", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Registration failed! Please check your connection and try again.", Toast.LENGTH_LONG).show();
                             //restart this activity
                             overridePendingTransition(0, 0);
                             finish();
@@ -218,33 +224,47 @@ public class LogReg extends AppCompatActivity {
                 });
     }
 
-    private void writeNewUser(String firstName, String lastName, String email, String id) {
-        User user = new User(firstName, lastName, email, id);
+    private void writeNewUser(String name, String email, String id) {
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         Map<String, Object> newUser = new HashMap<>();
-        newUser.put("First Name", firstName);
-        newUser.put("Last Name", lastName);
+        newUser.put("Name", name);
         newUser.put("E-mail", email);
-        firebaseFirestore.collection("users").document("info").set(newUser)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Toast.makeText(LogReg.this, "User Registered",
-                                Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(LogReg.this, "ERROR" +e.toString(),
-                                Toast.LENGTH_SHORT).show();
-                        Log.d("TAG", e.toString());
-                    }
-                });
+
+        dbRef.child("users").child(currentUser.getUid()).setValue(newUser).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getApplicationContext(), "There was an error adding your data. Please go to the profile tab.", Toast.LENGTH_LONG).show();
+            }
+        });
+
 
     }
 
+    private void resetUserPw() {
+        userEmail = logEmail.getText().toString();
 
+        if (userEmail.equals("") || !userEmail.contains("@")) {
+            Toast.makeText(LogReg.this, "Enter your e-mail address first.", Toast.LENGTH_SHORT).show();
+        } else  {
+            auth.sendPasswordResetEmail(userEmail).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(LogReg.this, "Check your e-mail.", Toast.LENGTH_SHORT).show();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    //Toast.makeText(LogReg.this, "No such user found.", Toast.LENGTH_SHORT).show();
+                    Log.e("ERROR", e.getMessage());
 
+                }
+            });
+        }
+    }
 }
+
+
+
 

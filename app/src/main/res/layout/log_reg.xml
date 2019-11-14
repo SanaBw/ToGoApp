@@ -50,12 +50,27 @@
             app:layout_constraintTop_toBottomOf="@+id/logEmailText" />
 
         <TextView
+            android:id="@+id/resetPwTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/whiteTransparent"
+            android:padding="5dp"
+            android:text="Reset password"
+            android:textColor="@color/colorAccent"
+            android:textStyle="italic"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/logBtn" />
+
+        <TextView
             android:id="@+id/logregText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginBottom="10dp"
             android:background="@color/whiteTransparent"
             android:padding="5dp"
             android:text="Not a user? Register here!"
@@ -64,7 +79,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/logBtn" />
+            app:layout_constraintTop_toBottomOf="@+id/resetPwTxt" />
 
         <Button
             android:id="@+id/logBtn"
@@ -89,11 +104,25 @@
 
 
         <EditText
+            android:id="@+id/nameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="200dp"
+            android:background="@color/whiteTransparent"
+            android:ems="10"
+            android:hint="Full Name"
+            android:inputType="textPersonName"
+            android:padding="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
             android:id="@+id/emailText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="200dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:background="@color/whiteTransparent"
             android:ems="10"
@@ -103,7 +132,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.496"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/nameText" />
 
         <EditText
             android:id="@+id/pwText"
