@@ -20,6 +20,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -38,10 +39,10 @@ public class LogReg extends AppCompatActivity {
     TextView logreg, reglog, resetPw;
     Button logIn, register;
     String userEmail, userPw, newUserName, newUserEmail, newUserPw;
-    Boolean userExists;
+    static Boolean userExists;
 
     FirebaseAuth auth = FirebaseAuth.getInstance();
-    DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+    DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child("users");
 
     ViewFlipper vf;
     ProgressBar progressBar;
@@ -121,10 +122,7 @@ public class LogReg extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Please enter a valid e-mail address.", Toast.LENGTH_LONG).show();
         } else if (newUserPw.length() < 5) {
             Toast.makeText(getApplicationContext(), "Password needs be at least 5 characters long.", Toast.LENGTH_LONG).show();
-        } else if (userExists(newUserEmail)) {
-            Toast.makeText(getApplicationContext(), "User exists. Choose another e-mail or reset your password.", Toast.LENGTH_LONG).show();
-            progressBar.setVisibility(View.GONE);
-        } else if (!userExists(newUserEmail)) {
+        } else {
             progressBar.setVisibility(View.VISIBLE);
             auth.createUserWithEmailAndPassword(newUserEmail, newUserPw)
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -137,8 +135,17 @@ public class LogReg extends AppCompatActivity {
                                 vf.showNext();
                                 logEmail.setText(newUserEmail);
                             } else {
-                                Toast.makeText(getApplicationContext(), "Registration failed! Please check your connection and try again.", Toast.LENGTH_LONG).show();
-                                progressBar.setVisibility(View.GONE);
+                                try {
+                                    throw task.getException();
+                                } catch (FirebaseAuthUserCollisionException existEmail) {
+                                    Toast.makeText(getApplicationContext(), "Such user already exists! Choose another E-mail or reset your password.", Toast.LENGTH_LONG).show();
+                                    progressBar.setVisibility(View.GONE);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(getApplicationContext(), "Registration failed! Please check your connection and try again.", Toast.LENGTH_LONG).show();
+                                    progressBar.setVisibility(View.GONE);
+                                }
+
                             }
                         }
                     });
@@ -164,6 +171,7 @@ public class LogReg extends AppCompatActivity {
                                 progressBar.setVisibility(View.GONE);
                             } else if (!auth.getCurrentUser().isEmailVerified()) {
                                 Toast.makeText(getApplicationContext(), "Please verify your e-mail. Check your inbox!", Toast.LENGTH_LONG).show();
+                                auth.getCurrentUser().sendEmailVerification();
                                 progressBar.setVisibility(View.GONE);
                             } else {
                                 Toast.makeText(getApplicationContext(), "Connecting. Please wait...", Toast.LENGTH_LONG).show();
@@ -175,28 +183,6 @@ public class LogReg extends AppCompatActivity {
                         }
                     });
         }
-    }
-
-    private boolean userExists(final String userEmail) {
-
-        dbRef.child("users").orderByChild("email").equalTo(userEmail).addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            userExists = true;
-                        } else {
-                            userExists = false;
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                }
-        );
-        return userExists;
     }
 
 
@@ -232,7 +218,7 @@ public class LogReg extends AppCompatActivity {
         newUser.put("Name", name);
         newUser.put("E-mail", email);
 
-        dbRef.child("users").child(currentUser.getUid()).setValue(newUser).addOnFailureListener(new OnFailureListener() {
+        dbRef.child(currentUser.getUid()).setValue(newUser).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(getApplicationContext(), "There was an error adding your data. Please go to the profile tab.", Toast.LENGTH_LONG).show();
@@ -247,7 +233,7 @@ public class LogReg extends AppCompatActivity {
 
         if (userEmail.equals("") || !userEmail.contains("@")) {
             Toast.makeText(LogReg.this, "Enter your e-mail address first.", Toast.LENGTH_SHORT).show();
-        } else  {
+        } else {
             auth.sendPasswordResetEmail(userEmail).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
