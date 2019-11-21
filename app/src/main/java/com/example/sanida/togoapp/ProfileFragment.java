@@ -1,7 +1,7 @@
 package com.example.sanida.togoapp;
 
+import android.app.ExpandableListActivity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -10,9 +10,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import android.provider.ContactsContract;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,14 +20,15 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.annotation.GlideModule;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.DataSnapshot;
@@ -37,7 +36,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -52,14 +50,16 @@ public class ProfileFragment extends Fragment {
     ImageView profileImg;
     View view;
     Button signOutBtn, saveBtn, editBtn;
-    EditText nameTxt, emailTxt, passwordTxt;
+    EditText nameTxt, passwordTxt;
 
     private Uri filePath;
     FirebaseStorage storage;
     StorageReference storageReference;
+    StorageReference imageReference;
     static FirebaseAuth auth;
     DatabaseReference dbRef;
     FirebaseUser user;
+    String imagePath;
     FirebaseDatabase database;
     String userPath;
     String username, email;
@@ -76,7 +76,9 @@ public class ProfileFragment extends Fragment {
         database = FirebaseDatabase.getInstance();
         user = auth.getCurrentUser();
         userPath = user.getUid();
-        dbRef = database.getReference("/users");
+        dbRef = FirebaseDatabase.getInstance().getReference().child("/users");
+
+
 
 
         profileImg = view.findViewById(R.id.profileImg);
@@ -85,11 +87,13 @@ public class ProfileFragment extends Fragment {
         signOutBtn = view.findViewById(R.id.signOutBtn);
         saveBtn = view.findViewById(R.id.saveBtn);
         nameTxt = view.findViewById(R.id.nameTxt);
-        emailTxt = view.findViewById(R.id.emailTxt);
         editBtn = view.findViewById(R.id.editBtn);
         passwordTxt = view.findViewById(R.id.passwordTxt);
 
         fetchUserData();
+
+
+
 
 
         editBtn.setOnClickListener(new View.OnClickListener() {
@@ -97,11 +101,9 @@ public class ProfileFragment extends Fragment {
             public void onClick(View view) {
                 if (!nameTxt.isEnabled()) {
                     nameTxt.setEnabled(true);
-                    emailTxt.setEnabled(true);
                     passwordTxt.setEnabled(true);
                 } else {
                     nameTxt.setEnabled(false);
-                    emailTxt.setEnabled(false);
                     passwordTxt.setEnabled(false);
                 }
 
@@ -118,10 +120,9 @@ public class ProfileFragment extends Fragment {
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                updateUserData(nameTxt.getText().toString(), emailTxt.getText().toString(), passwordTxt.getText().toString());
+                updateUserData(nameTxt.getText().toString(), passwordTxt.getText().toString());
                 fetchUserData();
                 nameTxt.setEnabled(false);
-                emailTxt.setEnabled(false);
                 passwordTxt.setEnabled(false);
             }
 
@@ -141,63 +142,32 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
-    private void updateUserData(String newUsername, final String newEmail, String newPw) {
+    private void updateUserData(String newUsername, String newPw) {
 
         if (!newUsername.equals(username)) {
-            dbRef.child(userPath).child("Name").setValue(newUsername);
+            dbRef.child(userPath).child("Name").setValue(newUsername).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(getContext(), "Name successfully changed!", Toast.LENGTH_LONG).show();
+                }
+            });
         }
-
-        if (!newEmail.equals(email)) {
-            if (passwordTxt.getText().toString().equals("")){
-                Toast.makeText(getContext(), "Provide a password in order to change your E-mail!", Toast.LENGTH_LONG).show();
-            } else {
-                AuthCredential credential = EmailAuthProvider
-                        .getCredential(email, passwordTxt.getText().toString()); // Current Login Credentials \\
-
-                user.reauthenticate(credential)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                Log.d("SUCCESS:" ,"User re-authenticated.");
-
-                                user.updateEmail(newEmail)
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                if (task.isSuccessful()) {
-                                                    Log.d("SUCCESS", "User email address updated." + email + " " + passwordTxt.getText().toString());
-                                                    Toast.makeText(getContext(), "E-mail changed! Sign in again, please.", Toast.LENGTH_LONG).show();
-                                                    auth.signOut();
-                                                    getActivity().onBackPressed();
-                                                    Intent i = new Intent(getContext(), LogReg.class);
-                                                    startActivity(i);
-                                                } else {
-                                                    try {
-                                                        throw task.getException();
-                                                    } catch (FirebaseAuthUserCollisionException existEmail) {
-                                                        Toast.makeText(getContext(), "Such E-mail already exists!", Toast.LENGTH_LONG).show();
-                                                    } catch (Exception e) {
-                                                        e.printStackTrace();
-                                                        Toast.makeText(getContext(), "Unespected error. Try again.", Toast.LENGTH_LONG).show();
-                                                    }
-                                                }
-                                            }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Log.e("ERROR:", e.getMessage());
-                                    }
-                                });
-
-                            }
-                        });
-            }     } else {
-                Toast.makeText(getContext(), "Such e-mail already exists!", Toast.LENGTH_LONG).show();
-            }
 
 
         if (!newPw.isEmpty() && !newPw.equals("")) {
-            user.updatePassword(newPw);
+            user.updatePassword(newPw).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(getContext(), "Password updated!", Toast.LENGTH_LONG).show();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getContext(), "Something went wrong. Try again with a different or longer password!", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+
+                }
+            });
         }
 
 
@@ -205,7 +175,7 @@ public class ProfileFragment extends Fragment {
 
     static boolean exists;
 
-    public static boolean userExists(String email){
+    public static boolean userExists(String email) {
         auth.fetchSignInMethodsForEmail(email)
                 .addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
                     @Override
@@ -216,7 +186,7 @@ public class ProfileFragment extends Fragment {
 
                     }
                 });
-    return exists;
+        return exists;
     }
 
 
@@ -225,12 +195,18 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 username = dataSnapshot.child("Name").getValue().toString();
+                if (dataSnapshot.hasChild("Photo")){
+                    imagePath = dataSnapshot.child("Photo").getValue().toString();
+                    Glide.with(getContext())
+                            .load(storageReference.child("/images").child(imagePath))
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(profileImg);
+                }
                 email = user.getEmail();
-                if (!email.equals( dbRef.child(userPath).child("E-mail"))){
+                if (!email.equals(dbRef.child(userPath).child("E-mail"))) {
                     dbRef.child(userPath).child("E-mail").setValue(email);
                 }
                 nameTxt.setText(username);
-                emailTxt.setText(email);
 
 
             }
@@ -312,3 +288,5 @@ public class ProfileFragment extends Fragment {
 
 
 }
+
+
