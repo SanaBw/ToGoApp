@@ -55,7 +55,6 @@ public class ProfileFragment extends Fragment {
     private Uri filePath;
     FirebaseStorage storage;
     StorageReference storageReference;
-    StorageReference imageReference;
     static FirebaseAuth auth;
     DatabaseReference dbRef;
     FirebaseUser user;

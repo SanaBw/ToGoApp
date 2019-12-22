@@ -20,7 +20,7 @@
                 android:layout_height="wrap_content">
 
                 <EditText
-                    android:id="@+id/destinationTxt"
+                    android:id="@+id/endTxt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30sp"
@@ -44,7 +44,11 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/startTxt" />
+                    app:layout_constraintTop_toBottomOf="@+id/startTxt"
+                    android:shadowColor="#000000"
+                    android:shadowDx="1.5"
+                    android:shadowDy="1.3"
+                    android:shadowRadius="1.6"/>
 
                 <TextView
                     android:id="@+id/textView2"
@@ -57,7 +61,11 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView10" />
+                    app:layout_constraintTop_toBottomOf="@+id/textView10"
+                    android:shadowColor="#000000"
+                    android:shadowDx="1.5"
+                    android:shadowDy="1.3"
+                    android:shadowRadius="1.6"/>
 
                 <EditText
                     android:id="@+id/tripNameTxt"
@@ -79,14 +87,18 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="30dp"
-                    android:text="@string/common_google_play_services_update_button"
+                    android:text="Date"
                     android:textColor="@color/colorAccent"
                     android:textSize="15sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/destinationTxt" />
+                    app:layout_constraintTop_toBottomOf="@+id/endTxt"
+                    android:shadowColor="#000000"
+                    android:shadowDx="1.5"
+                    android:shadowDy="1.3"
+                    android:shadowRadius="1.6"/>
 
-                <EditText
+                <TextView
                     android:id="@+id/dateTxt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -94,13 +106,15 @@
                     android:layout_marginEnd="20dp"
                     android:background="@color/whiteTransparent"
                     android:ems="10"
+                    android:hint="dd/MM/yy"
                     android:inputType="date"
                     android:textColor="@android:color/black"
+                    android:textColorHint="@color/colorAccent"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/destinationTxt" />
+                    app:layout_constraintTop_toBottomOf="@+id/endTxt" />
 
-                <EditText
+                <TextView
                     android:id="@+id/timeTxt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -108,8 +122,10 @@
                     android:layout_marginEnd="20dp"
                     android:background="@color/whiteTransparent"
                     android:ems="10"
+                    android:hint="hh/mm"
                     android:inputType="time"
                     android:textColor="@android:color/black"
+                    android:textColorHint="@color/colorAccent"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/dateTxt" />
@@ -125,7 +141,11 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/dateTxt" />
+                    app:layout_constraintTop_toBottomOf="@+id/dateTxt"
+                    android:shadowColor="#000000"
+                    android:shadowDx="1.5"
+                    android:shadowDy="1.3"
+                    android:shadowRadius="1.6"/>
 
                 <TextView
                     android:id="@+id/textView6"
@@ -138,7 +158,13 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tripNameTxt" />
+                    app:layout_constraintTop_toBottomOf="@+id/tripNameTxt"
+                    android:shadowColor="#000000"
+                    android:shadowDx="1.5"
+                    android:shadowDy="1.3"
+                    android:shadowRadius="1.6"/>
+
+
 
                 <EditText
                     android:id="@+id/startTxt"
@@ -152,7 +178,8 @@
                     android:textColor="@android:color/black"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tripNameTxt" />
+                    app:layout_constraintTop_toBottomOf="@+id/tripNameTxt">
+                </EditText>
 
                 <TextView
                     android:id="@+id/textView8"
@@ -165,10 +192,14 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/checkBox" />
+                    app:layout_constraintTop_toBottomOf="@+id/drivingBox"
+                    android:shadowColor="#000000"
+                    android:shadowDx="1.5"
+                    android:shadowDy="1.3"
+                    android:shadowRadius="1.6"/>
 
                 <EditText
-                    android:id="@+id/editText7"
+                    android:id="@+id/carInfoTxt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
@@ -181,7 +212,7 @@
                     android:textColorHint="@color/colorAccent"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/checkBox" />
+                    app:layout_constraintTop_toBottomOf="@+id/drivingBox" />
 
                 <TextView
                     android:id="@+id/textView9"
@@ -189,15 +220,19 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="30dp"
-                    android:text="Open seats"
+                    android:text="Seats available"
                     android:textColor="@color/colorAccent"
                     android:textSize="15sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/editText7" />
+                    app:layout_constraintTop_toBottomOf="@+id/carInfoTxt"
+                    android:shadowColor="#000000"
+                    android:shadowDx="1.5"
+                    android:shadowDy="1.3"
+                    android:shadowRadius="1.6"/>
 
                 <EditText
-                    android:id="@+id/editText8"
+                    android:id="@+id/seatsTxt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
@@ -208,7 +243,7 @@
                     android:textColor="@android:color/black"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/editText7" />
+                    app:layout_constraintTop_toBottomOf="@+id/carInfoTxt" />
 
                 <TextView
                     android:id="@+id/textView10"
@@ -223,7 +258,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <CheckBox
-                    android:id="@+id/checkBox"
+                    android:id="@+id/drivingBox"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
@@ -233,17 +268,23 @@
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/timeTxt" />
+                    app:layout_constraintTop_toBottomOf="@+id/timeTxt"
+                    android:shadowColor="@color/colorAccent"
+                    android:shadowDx="1.5"
+                    android:shadowDy="1.3"
+                    android:shadowRadius="1.6"/>
 
                 <Button
-                    android:id="@+id/button"
+                    android:id="@+id/saveBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="50dp"
-                    android:text="Button"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="100dp"
+                    android:background="@color/colorAccent"
+                    android:text="Save"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/editText8" />
+                    app:layout_constraintTop_toBottomOf="@+id/seatsTxt" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
