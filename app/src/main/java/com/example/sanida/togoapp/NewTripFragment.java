@@ -99,14 +99,8 @@ public class NewTripFragment extends Fragment {
             Toast.makeText(getContext(), "Please fill out every field.", Toast.LENGTH_LONG).show();
 
         } else {
-            dbRef.child(tripId).child("name").setValue(tripName);
-            dbRef.child(tripId).child("start location").setValue(tripName);
-            dbRef.child(tripId).child("end location").setValue(tripName);
-            dbRef.child(tripId).child("date and time").setValue(date + " " + time);
-            dbRef.child(tripId).child("driving").setValue(driving);
-            dbRef.child(tripId).child("car info").setValue(carInfo);
-            dbRef.child(tripId).child("seats").setValue(seats);
-            dbRef.child(tripId).child("user").setValue(user.getEmail());
+            Trip trip = new Trip(tripName, startLocation, endLocation, date, time, carInfo, seats, driving, user.getEmail());
+            dbRef.child(tripId).setValue(trip.toMap());
 
             Toast.makeText(getContext(), "Trip successfully saved and published!", Toast.LENGTH_LONG).show();
         }

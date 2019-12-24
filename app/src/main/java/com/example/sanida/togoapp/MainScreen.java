@@ -62,6 +62,10 @@ public class MainScreen extends AppCompatActivity {
                         ft.replace(R.id.fragmentFrame, new ProfileFragment());
                         break;
                     }
+                    case (R.id.myTrips): {
+                        ft.replace(R.id.fragmentFrame, new MyTripsFragment());
+                        break;
+                    }
                     case (R.id.chat): {
                         System.out.println("chat");
                         break;
