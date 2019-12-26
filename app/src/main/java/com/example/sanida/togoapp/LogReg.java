@@ -215,8 +215,8 @@ public class LogReg extends AppCompatActivity {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         Map<String, Object> newUser = new HashMap<>();
-        newUser.put("Name", name);
-        newUser.put("E-mail", email);
+        newUser.put("name", name);
+        newUser.put("email", email);
 
         dbRef.child(currentUser.getUid()).setValue(newUser).addOnFailureListener(new OnFailureListener() {
             @Override

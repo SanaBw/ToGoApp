@@ -6,6 +6,35 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Trip {
+
+    String tripName;
+    String startLocation;
+    String endLocation;
+    String date;
+    String time;
+    String carInfo;
+
+    String userId;
+    Boolean driving;
+    int seats;
+
+
+    public Trip() {
+
+    }
+
+    public Trip(String tripName,String startLocation,String endLocation,String date,String time,String carInfo, int seats, Boolean driving, String userId) {
+        this.tripName = tripName;
+        this.startLocation = startLocation;
+        this.endLocation = endLocation;
+        this.date = date;
+        this.time = time;
+        this.carInfo = carInfo;
+        this.seats=seats;
+        this.driving = driving;
+        this.userId = userId;
+    }
+
     public String getTripName() {
         return tripName;
     }
@@ -70,55 +99,33 @@ public class Trip {
         this.seats = seats;
     }
 
-    String tripName;
-    String startLocation;
-    String endLocation;
-    String date;
-    String time;
-    String carInfo;
 
-    public String getUser() {
-        return user;
+
+    public String getUserId() {
+        return userId;
     }
 
-    public void setUser(String user) {
-        this.user = user;
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    String user;
-    Boolean driving;
-    int seats;
 
-    public Map<String, Boolean> tripMap = new HashMap<>();
-
-    public Trip() {
-
-    }
-
-    public Trip(String tripName,String startLocation,String endLocation,String date,String time,String carInfo, int seats, Boolean driving, String user) {
-        this.tripName = tripName;
-        this.startLocation = startLocation;
-        this.endLocation = endLocation;
-        this.date = date;
-        this.time = time;
-        this.carInfo = carInfo;
-        this.seats=seats;
-        this.driving = driving;
-        this.user = user;
-    }
 
 
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
-        result.put("name", tripName);
-        result.put("start", startLocation);
-        result.put("end", endLocation);
-        result.put("date", date + " " + time);
-        result.put("car info", carInfo);
+        result.put("tripName", tripName);
+        result.put("startLocation", startLocation);
+        result.put("endLocation", endLocation);
+        result.put("date", date);
+        result.put("time", time);
+        result.put("carInfo", carInfo);
         result.put("seats", seats);
         result.put("driving", driving);
-        result.put("user", user);
+        result.put("userId", userId);
+
 
         return result;
     }

@@ -15,29 +15,36 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:text="start"
-            app:layout_constraintStart_toEndOf="@+id/nameTxt"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textColor="@color/colorAccent"
+            android:textSize="18sp"
+            app:layout_constraintStart_toEndOf="@+id/userPhoto"
+            app:layout_constraintTop_toBottomOf="@+id/nameTxt" />
 
         <TextView
             android:id="@+id/endTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="20dp"
             android:text="end"
+            android:textColor="@color/colorAccent"
+            android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/nameTxt" />
 
         <TextView
             android:id="@+id/nameTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:text="name"
-            app:layout_constraintStart_toStartOf="parent"
+            android:textColor="@color/colorAccent"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/userPhoto"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -45,39 +52,77 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:layout_marginEnd="20dp"
             android:text="date"
-            app:layout_constraintEnd_toStartOf="@+id/driving"
-            app:layout_constraintTop_toBottomOf="@+id/seatsTxt" />
+            android:textColor="@color/colorAccent"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/userPhoto"
+            app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
         <TextView
             android:id="@+id/driving"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="20dp"
+            android:layout_marginTop="60dp"
             android:text="driving"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/nameTxt" />
+            android:textSize="16sp"
+            app:layout_constraintStart_toEndOf="@+id/userTxt"
+            app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
         <TextView
             android:id="@+id/seatsTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginEnd="10dp"
             android:text="seats"
-            app:layout_constraintEnd_toStartOf="@+id/endTxt"
-            app:layout_constraintStart_toEndOf="@+id/startTxt"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
         <TextView
             android:id="@+id/userTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="60dp"
             android:text="user"
+            android:textSize="16sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/nameTxt" />
+            app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="start"
+            android:textSize="12dp"
+            android:textStyle="italic"
+            app:layout_constraintStart_toEndOf="@+id/userPhoto"
+            app:layout_constraintTop_toBottomOf="@+id/startTxt" />
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:text="destination"
+            android:textSize="12sp"
+            android:textStyle="italic"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/endTxt" />
+
+        <ImageView
+            android:id="@+id/userPhoto"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:scaleType="centerInside"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:srcCompat="@tools:sample/avatars" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

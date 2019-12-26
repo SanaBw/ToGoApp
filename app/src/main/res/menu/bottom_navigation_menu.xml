@@ -15,7 +15,7 @@
         android:id="@+id/chat"
         android:icon="@drawable/chat" />
     <item
-        android:title="trips"
+        android:title="my trips"
         android:id="@+id/myTrips"
         android:icon="@drawable/car" />
     <item

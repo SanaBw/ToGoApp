@@ -2,7 +2,9 @@ package com.example.sanida.togoapp;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,13 +14,18 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -27,7 +34,7 @@ import java.util.UUID;
 
 public class NewTripFragment extends Fragment {
 
-    String tripName, startLocation, endLocation, date, time, carInfo;
+    String tripName, startLocation, endLocation, date, time, carInfo, userId,userName,userPhoto;
     Boolean driving;
     int seats;
     TextView tripNameTxt, startTxt, endTxt, dateTxt, timeTxt, carInfoTxt, seatsTxt;
@@ -80,6 +87,8 @@ public class NewTripFragment extends Fragment {
         return v;
     }
 
+    FragmentTransaction ft;
+
     private void saveTrip() {
         final String tripId = UUID.randomUUID().toString();
         tripName = tripNameTxt.getText().toString();
@@ -99,10 +108,16 @@ public class NewTripFragment extends Fragment {
             Toast.makeText(getContext(), "Please fill out every field.", Toast.LENGTH_LONG).show();
 
         } else {
-            Trip trip = new Trip(tripName, startLocation, endLocation, date, time, carInfo, seats, driving, user.getEmail());
+            Trip trip = new Trip(tripName, startLocation, endLocation, date, time, carInfo, seats, driving, user.getUid());
             dbRef.child(tripId).setValue(trip.toMap());
 
             Toast.makeText(getContext(), "Trip successfully saved and published!", Toast.LENGTH_LONG).show();
+            ft = getActivity().getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.fragmentFrame, new HomeFragment());
+            ft.commit();
         }
     }
+
+
+
 }

@@ -4,6 +4,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -24,18 +27,18 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 
-
 public class HomeFragment extends Fragment {
 
     FloatingActionButton addTripBtn;
+    Context context;
     FragmentTransaction ft;
     ListView allTrips;
     ProgressDialog mProgressDialog;
-    DatabaseReference databaseReference= FirebaseDatabase.getInstance().getReference();
+    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
     TripsAdapter adapter;
-    ArrayList<Trip> trips=new ArrayList<>();
+    ArrayList<Trip> trips = new ArrayList<>();
 
-        @Override
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -57,53 +60,57 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        allTrips=(ListView)view.findViewById(R.id.tripsListView);
-        adapter=new TripsAdapter(getContext(),trips);
-        allTrips.setAdapter(adapter);
+        allTrips = (ListView) view.findViewById(R.id.tripsListView);
+        context = getContext();
+
         getDataFromServer();
 
         return view;
     }
 
-    public void getDataFromServer()
-    {
+    public void getDataFromServer() {
         showProgressDialog();
-        databaseReference.child("trips").addValueEventListener(new ValueEventListener() {
-            @Override
+        databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
+           @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists())
-                {
-                    for(DataSnapshot postSnapShot:dataSnapshot.getChildren())
-                    {
-                        Trip trip=postSnapShot.getValue(Trip.class);
-                        trips.add(trip);
-                        System.out.println(trips.size());
-                        adapter.notifyDataSetChanged();
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
+                            Trip trip = postSnapShot.getValue(Trip.class);
+                            trips.add(trip);
+
+
                     }
                 }
                 hideProgressDialog();
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                hideProgressDialog();
-            }
-        });
-    }
-    private void showProgressDialog() {
-            if (mProgressDialog == null) {
-                mProgressDialog = new ProgressDialog(getContext());
-                mProgressDialog.setMessage("Loading...");
-                mProgressDialog.setIndeterminate(true);
+                adapter = new TripsAdapter(context, trips);
+                allTrips.setAdapter(adapter);
+
             }
 
-            mProgressDialog.show();
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                hideProgressDialog();
+            }
+
+
+        }));
     }
+
+    private void showProgressDialog() {
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(getContext());
+            mProgressDialog.setMessage("Loading...");
+            mProgressDialog.setIndeterminate(true);
+        }
+
+        mProgressDialog.show();
+    }
+
     private void hideProgressDialog() {
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
     }
-
 
 
 }

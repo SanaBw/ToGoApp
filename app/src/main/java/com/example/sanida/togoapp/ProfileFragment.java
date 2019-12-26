@@ -89,7 +89,10 @@ public class ProfileFragment extends Fragment {
         editBtn = view.findViewById(R.id.editBtn);
         passwordTxt = view.findViewById(R.id.passwordTxt);
 
-        fetchUserData();
+
+            fetchUserData();
+
+
 
 
 
@@ -144,7 +147,7 @@ public class ProfileFragment extends Fragment {
     private void updateUserData(String newUsername, String newPw) {
 
         if (!newUsername.equals(username)) {
-            dbRef.child(userPath).child("Name").setValue(newUsername).addOnSuccessListener(new OnSuccessListener<Void>() {
+            dbRef.child(userPath).child("name").setValue(newUsername).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
                     Toast.makeText(getContext(), "Name successfully changed!", Toast.LENGTH_LONG).show();
@@ -193,17 +196,17 @@ public class ProfileFragment extends Fragment {
         dbRef.child(userPath).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                username = dataSnapshot.child("Name").getValue().toString();
-                if (dataSnapshot.hasChild("Photo")){
-                    imagePath = dataSnapshot.child("Photo").getValue().toString();
+                username = dataSnapshot.child("name").getValue().toString();
+                if (dataSnapshot.hasChild("photo")){
+                    imagePath = dataSnapshot.child("photo").getValue().toString();
                     Glide.with(getContext())
                             .load(storageReference.child("/images").child(imagePath))
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .into(profileImg);
                 }
                 email = user.getEmail();
-                if (!email.equals(dbRef.child(userPath).child("E-mail"))) {
-                    dbRef.child(userPath).child("E-mail").setValue(email);
+                if (!email.equals(dbRef.child(userPath).child("email"))) {
+                    dbRef.child(userPath).child("email").setValue(email);
                 }
                 nameTxt.setText(username);
 
@@ -276,7 +279,7 @@ public class ProfileFragment extends Fragment {
 
     private void addPhotoPath(String imgId) {
 
-        dbRef.child(userPath).child("Photo").setValue(imgId).addOnFailureListener(new OnFailureListener() {
+        dbRef.child(userPath).child("photo").setValue(imgId).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(getContext(), "There was an error adding your photo. Please try again.", Toast.LENGTH_LONG).show();
