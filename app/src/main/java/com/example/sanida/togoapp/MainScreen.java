@@ -54,10 +54,6 @@ public class MainScreen extends AppCompatActivity {
                         ft.replace(R.id.fragmentFrame, new HomeFragment());
                         break;
                     }
-                    case (R.id.searchItem): {
-                        ft.replace(R.id.fragmentFrame, new SearchFragment());
-                        break;
-                    }
                     case (R.id.profileItem): {
                         ft.replace(R.id.fragmentFrame, new ProfileFragment());
                         break;

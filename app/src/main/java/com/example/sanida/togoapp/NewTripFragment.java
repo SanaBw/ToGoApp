@@ -34,10 +34,19 @@ import java.util.UUID;
 
 public class NewTripFragment extends Fragment {
 
-    String tripName, startLocation, endLocation, date, time, carInfo, userId,userName,userPhoto;
+    String tripName;
+    String startLocation;
+    String endLocation;
+    String date;
+    String time;
+    String carInfo;
+    String userId;
+    String userName;
+    String userPhoto;
+    double cost;
     Boolean driving;
     int seats;
-    TextView tripNameTxt, startTxt, endTxt, dateTxt, timeTxt, carInfoTxt, seatsTxt;
+    TextView tripNameTxt, startTxt, endTxt, dateTxt, timeTxt, carInfoTxt, seatsTxt, costTxt;
     CheckBox drivingBox;
     Button saveBtn;
 
@@ -63,6 +72,7 @@ public class NewTripFragment extends Fragment {
         carInfoTxt = v.findViewById(R.id.carInfoTxt);
         seatsTxt = v.findViewById(R.id.seatsTxt);
         drivingBox = v.findViewById(R.id.drivingBox);
+        costTxt = v.findViewById(R.id.costTxt);
 
 
         saveBtn = v.findViewById(R.id.saveBtn);
@@ -97,10 +107,16 @@ public class NewTripFragment extends Fragment {
         date = dateTxt.getText().toString();
         time = timeTxt.getText().toString();
         carInfo = carInfoTxt.getText().toString();
+
         if (seatsTxt.getText().toString().equals("")) {
             Toast.makeText(getContext(), "Please fill out every field.", Toast.LENGTH_LONG).show();
         } else {
             seats = Integer.parseInt(seatsTxt.getText().toString());
+        }
+        if (costTxt.getText().toString().equals("")) {
+            Toast.makeText(getContext(), "Please fill out every field.", Toast.LENGTH_LONG).show();
+        } else {
+            cost = Double.parseDouble(costTxt.getText().toString());
         }
         driving = drivingBox.isChecked();
 
@@ -108,7 +124,7 @@ public class NewTripFragment extends Fragment {
             Toast.makeText(getContext(), "Please fill out every field.", Toast.LENGTH_LONG).show();
 
         } else {
-            Trip trip = new Trip(tripName, startLocation, endLocation, date, time, carInfo, seats, driving, user.getUid());
+            Trip trip = new Trip(tripName, startLocation, endLocation, date, time, carInfo, seats, driving, user.getUid(), cost);
             dbRef.child(tripId).setValue(trip.toMap());
 
             Toast.makeText(getContext(), "Trip successfully saved and published!", Toast.LENGTH_LONG).show();

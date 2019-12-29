@@ -6,6 +6,9 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import android.app.SearchManager;
+import android.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,6 +40,9 @@ public class HomeFragment extends Fragment {
     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
     TripsAdapter adapter;
     ArrayList<Trip> trips = new ArrayList<>();
+    SearchView searchView;
+    View view;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,10 +50,14 @@ public class HomeFragment extends Fragment {
 
     }
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        searchView = (SearchView) view.findViewById(R.id.searchView);
 
         addTripBtn = view.findViewById(R.id.addTripBtn);
 
@@ -60,10 +70,30 @@ public class HomeFragment extends Fragment {
             }
         });
 
+
+
         allTrips = (ListView) view.findViewById(R.id.tripsListView);
         context = getContext();
 
         getDataFromServer();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+
+                String text = newText;
+                adapter.filter(text);
+
+                return false;
+            }
+        });
+
 
         return view;
     }

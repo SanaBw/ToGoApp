@@ -21,6 +21,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Objects;
 
 class TripsAdapter extends BaseAdapter {
@@ -28,12 +29,15 @@ class TripsAdapter extends BaseAdapter {
     LayoutInflater layoutInflater;
     ArrayList<Trip> trips;
     String userName, userPhoto;
+    ArrayList<Trip> arraylist;
 
     public TripsAdapter(Context con,ArrayList<Trip> trips)
     {
         context=con;
         layoutInflater = LayoutInflater.from(context);
         this.trips=trips;
+        arraylist = new ArrayList<>();
+        this.arraylist.addAll(trips);
     }
     @Override
     public int getCount() {
@@ -46,7 +50,6 @@ class TripsAdapter extends BaseAdapter {
         if (convertView == null) {
             convertView = layoutInflater.inflate(R.layout.trip, null, false);
             holder = new ViewHolder();
-            holder.tripName = (TextView) convertView.findViewById(R.id.nameTxt);
             holder.tripStart = (TextView) convertView.findViewById(R.id.startTxt);
             holder.tripEnd = (TextView) convertView.findViewById(R.id.endTxt);
             holder.tripDate = (TextView) convertView.findViewById(R.id.dateTxt);
@@ -54,6 +57,7 @@ class TripsAdapter extends BaseAdapter {
             holder.tripDriving = (TextView) convertView.findViewById(R.id.driving);
             holder.tripUser = (TextView) convertView.findViewById(R.id.userTxt);
             holder.userImg = convertView.findViewById(R.id.userPhoto);
+            holder.tripCost = convertView.findViewById(R.id.costTxt);
 
             convertView.setTag(holder);
         } else {
@@ -61,15 +65,15 @@ class TripsAdapter extends BaseAdapter {
         }
 
         Trip trip=trips.get(position);
-        holder.tripName.setText(trip.getTripName());
+        holder.tripCost.setText(trip.getCost() + " BAM");
         holder.tripStart.setText(trip.getStartLocation());
         holder.tripEnd.setText(trip.getEndLocation());
         holder.tripDate.setText(trip.getDate() + " at " + trip.getTime());
         holder.tripSeats.setText(trip.getSeats() + " seats available");
         if (trip.getDriving()){
-            holder.tripDriving.setText("driving");
+            holder.tripDriving.setText(" is driving");
         } else {
-            holder.tripDriving.setText("not driving");
+            holder.tripDriving.setText(" is not driving");
         }
 
         fetchUserData(trip.getUserId(), holder);
@@ -77,8 +81,24 @@ class TripsAdapter extends BaseAdapter {
 
         return convertView;
     }
+
+    public void filter(String charText) {
+        charText = charText.toLowerCase(Locale.getDefault());
+        trips.clear();
+        if (charText.length() == 0) {
+            trips.addAll(arraylist);
+        } else {
+            for (Trip tr : arraylist) {
+                if (tr.getStartLocation().toLowerCase(Locale.getDefault()).contains(charText) || tr.getEndLocation().toLowerCase(Locale.getDefault()).contains(charText)) {
+                    trips.add(tr);
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
+
     public class ViewHolder {
-        TextView tripName,tripStart,tripEnd, tripDate, tripSeats, tripDriving, tripUser;
+        TextView tripStart,tripEnd, tripDate, tripSeats, tripDriving, tripUser, tripCost;
         ImageView userImg;
 
 
@@ -91,6 +111,8 @@ class TripsAdapter extends BaseAdapter {
     public long getItemId(int position) {
         return position;
     }
+
+
 
     private void fetchUserData(String user, ViewHolder holder) {
 
@@ -116,7 +138,7 @@ class TripsAdapter extends BaseAdapter {
                         }
                         if (Objects.equals(postSnapShot.getKey(), "name")) {
                             userName = Objects.requireNonNull(postSnapShot.getValue()).toString();
-                            viewHolder.tripUser.setText(userName+ " is ");
+                            viewHolder.tripUser.setText(userName);
                         }
 
 
@@ -133,25 +155,6 @@ class TripsAdapter extends BaseAdapter {
             }
 
 
-        }));/*addListenerForSingleValueEvent(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                System.out.println("ON DATA CHANGE");
-                userInfo[0] = String.valueOf(dataSnapshot.child("Name").getValue());
-                System.out.println("USERNAME IS " + userInfo[0]);
-                if (dataSnapshot.hasChild("Photo")){
-                    userInfo[1] = String.valueOf(dataSnapshot.child("Photo").getValue());
-                    System.out.println("IMAGE IS " + userInfo[1]);
-                }
-            }
-
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                System.out.println(databaseError);
-            }
-        });
-*/
+        }));
     }
 }

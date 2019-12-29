@@ -8,43 +8,42 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@android:color/white">
 
         <TextView
             android:id="@+id/startTxt"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="10dp"
             android:text="start"
             android:textColor="@color/colorAccent"
             android:textSize="18sp"
             app:layout_constraintStart_toEndOf="@+id/userPhoto"
-            app:layout_constraintTop_toBottomOf="@+id/nameTxt" />
+            app:layout_constraintTop_toBottomOf="@+id/imageView2" />
 
         <TextView
             android:id="@+id/endTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:layout_marginEnd="20dp"
             android:text="end"
             android:textColor="@color/colorAccent"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/nameTxt" />
+            app:layout_constraintTop_toBottomOf="@+id/imageView3" />
 
         <TextView
-            android:id="@+id/nameTxt"
+            android:id="@+id/costTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="name"
-            android:textColor="@color/colorAccent"
+            android:layout_marginTop="5dp"
+            android:text="cost"
+            android:textColor="@color/colorPrimary"
             android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/userPhoto"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -87,6 +86,7 @@
             android:layout_marginStart="10dp"
             android:layout_marginTop="60dp"
             android:text="user"
+            android:textColor="@color/colorAccent"
             android:textSize="16sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView5" />
@@ -118,11 +118,50 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:scaleType="centerInside"
+            android:scaleType="center"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/costTxt"
             tools:srcCompat="@tools:sample/avatars" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="5dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toStartOf="@+id/endTxt"
+            app:layout_constraintStart_toEndOf="@+id/startTxt"
+            app:layout_constraintTop_toBottomOf="@+id/costTxt"
+            app:srcCompat="@drawable/roadpic" />
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="20dp"
+            app:layout_constraintStart_toEndOf="@+id/userPhoto"
+            app:layout_constraintTop_toBottomOf="@+id/costTxt"
+            app:srcCompat="@drawable/pin" />
+
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/costTxt"
+            app:srcCompat="@drawable/pin" />
+
+        <ImageView
+            android:id="@+id/imageView4"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:layout_constraintBottom_toTopOf="@+id/dateTxt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/userPhoto"
+            app:srcCompat="@drawable/time" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

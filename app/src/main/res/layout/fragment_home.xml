@@ -5,16 +5,31 @@
     android:layout_height="match_parent"
     tools:context="com.example.sanida.togoapp.HomeFragment">
 
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+
+
+        <SearchView
+            android:id="@+id/searchView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:iconifiedByDefault="false"
+            android:searchIcon="@drawable/search" />
 
         <ListView
             android:id="@+id/tripsListView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/quantum_greyblack1000"
             tools:listitem="@layout/trip" />
+
+
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

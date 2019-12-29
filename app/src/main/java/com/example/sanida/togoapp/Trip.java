@@ -14,6 +14,16 @@ public class Trip {
     String time;
     String carInfo;
 
+    public Double getCost() {
+        return cost;
+    }
+
+    public void setCost(Double cost) {
+        this.cost = cost;
+    }
+
+    Double cost;
+
     String userId;
     Boolean driving;
     int seats;
@@ -23,7 +33,7 @@ public class Trip {
 
     }
 
-    public Trip(String tripName,String startLocation,String endLocation,String date,String time,String carInfo, int seats, Boolean driving, String userId) {
+    public Trip(String tripName,String startLocation,String endLocation,String date,String time,String carInfo, int seats, Boolean driving, String userId, Double cost) {
         this.tripName = tripName;
         this.startLocation = startLocation;
         this.endLocation = endLocation;
@@ -33,6 +43,7 @@ public class Trip {
         this.seats=seats;
         this.driving = driving;
         this.userId = userId;
+        this.cost=cost;
     }
 
     public String getTripName() {
