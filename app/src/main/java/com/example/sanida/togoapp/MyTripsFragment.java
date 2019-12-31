@@ -8,10 +8,13 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 import android.widget.ListView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -32,10 +35,10 @@ public class MyTripsFragment extends Fragment {
     Context context;
     FirebaseAuth auth;
     FragmentTransaction ft;
-    ListView allTrips;
+    RecyclerView allTrips;
     ProgressDialog mProgressDialog;
     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-    TripsAdapter adapter;
+    TripAdapter adapter;
     ArrayList<Trip> trips = new ArrayList<>();
     FirebaseUser user;
 
@@ -62,8 +65,13 @@ public class MyTripsFragment extends Fragment {
             }
         });
 
-        allTrips = (ListView) view.findViewById(R.id.tripsListView);
+        allTrips = view.findViewById(R.id.tripsView);
         context = getContext();
+
+        adapter = new TripAdapter(context, trips);
+        LinearLayoutManager llm = new LinearLayoutManager(context);
+        allTrips.setLayoutManager(llm);
+        allTrips.setAdapter( adapter );
 
         getDataFromServer();
 
@@ -87,7 +95,7 @@ public class MyTripsFragment extends Fragment {
                     }
                 }
                 hideProgressDialog();
-                adapter = new TripsAdapter(context, trips);
+                adapter = new TripAdapter(context, trips);
                 allTrips.setAdapter(adapter);
 
             }

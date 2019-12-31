@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.annotation.GlideModule;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -202,6 +203,7 @@ public class ProfileFragment extends Fragment {
                     Glide.with(getContext())
                             .load(storageReference.child("/images").child(imagePath))
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .apply(RequestOptions.circleCropTransform())
                             .into(profileImg);
                 }
                 email = user.getEmail();

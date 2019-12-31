@@ -1,6 +1,7 @@
 package com.example.sanida.togoapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -12,6 +13,10 @@ import android.widget.Button;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainScreen extends AppCompatActivity {
 
@@ -44,6 +49,7 @@ public class MainScreen extends AppCompatActivity {
             }
         };
 
+
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -51,19 +57,23 @@ public class MainScreen extends AppCompatActivity {
                 switch (menuItem.getItemId()) {
                     case (R.id.homeItem):
                     default: {
+                        ft.setCustomAnimations(R.anim.slide_left_in, R.anim.slide_right_out);
                         ft.replace(R.id.fragmentFrame, new HomeFragment());
                         break;
                     }
                     case (R.id.profileItem): {
+                        ft.setCustomAnimations(R.anim.slide_left_in, R.anim.slide_right_out);
                         ft.replace(R.id.fragmentFrame, new ProfileFragment());
                         break;
                     }
                     case (R.id.myTrips): {
+                        ft.setCustomAnimations(R.anim.slide_left_in, R.anim.slide_right_out);
                         ft.replace(R.id.fragmentFrame, new MyTripsFragment());
                         break;
                     }
                     case (R.id.chat): {
-                        System.out.println("chat");
+                        ft.setCustomAnimations(R.anim.slide_left_in, R.anim.slide_right_out);
+                        ft.replace(R.id.fragmentFrame, new ChatFragment());
                         break;
                     }
 

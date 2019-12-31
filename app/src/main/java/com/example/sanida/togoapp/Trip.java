@@ -7,6 +7,9 @@ import java.util.Map;
 
 public class Trip {
 
+
+
+    String tripId;
     String tripName;
     String startLocation;
     String endLocation;
@@ -28,12 +31,20 @@ public class Trip {
     Boolean driving;
     int seats;
 
+    public String getTripId() {
+        return tripId;
+    }
+
+    public void setTripId(String tripId) {
+        this.tripId = tripId;
+    }
 
     public Trip() {
 
     }
 
-    public Trip(String tripName,String startLocation,String endLocation,String date,String time,String carInfo, int seats, Boolean driving, String userId, Double cost) {
+    public Trip(String tripId, String tripName,String startLocation,String endLocation,String date,String time,String carInfo, int seats, Boolean driving, String userId, Double cost) {
+        this.tripId=tripId;
         this.tripName = tripName;
         this.startLocation = startLocation;
         this.endLocation = endLocation;
@@ -127,6 +138,7 @@ public class Trip {
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
+        result.put("tripId", tripId);
         result.put("tripName", tripName);
         result.put("startLocation", startLocation);
         result.put("endLocation", endLocation);
@@ -136,6 +148,7 @@ public class Trip {
         result.put("seats", seats);
         result.put("driving", driving);
         result.put("userId", userId);
+        result.put("cost", cost);
 
 
         return result;

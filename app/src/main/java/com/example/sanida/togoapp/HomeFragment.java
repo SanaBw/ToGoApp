@@ -2,13 +2,18 @@ package com.example.sanida.togoapp;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import android.app.SearchManager;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -29,35 +34,31 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+import static android.content.Context.LAYOUT_INFLATER_SERVICE;
+
 
 public class HomeFragment extends Fragment {
 
     FloatingActionButton addTripBtn;
     Context context;
     FragmentTransaction ft;
-    ListView allTrips;
+    RecyclerView allTrips;
     ProgressDialog mProgressDialog;
     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-    TripsAdapter adapter;
+    TripAdapter adapter;
     ArrayList<Trip> trips = new ArrayList<>();
     SearchView searchView;
     View view;
-
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-    }
-
-
+    LayoutInflater inflater;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        this.inflater=inflater;
         view = inflater.inflate(R.layout.fragment_home, container, false);
 
         searchView = (SearchView) view.findViewById(R.id.searchView);
+
 
         addTripBtn = view.findViewById(R.id.addTripBtn);
 
@@ -71,17 +72,23 @@ public class HomeFragment extends Fragment {
         });
 
 
-
-        allTrips = (ListView) view.findViewById(R.id.tripsListView);
+        allTrips = view.findViewById(R.id.tripsView);
         context = getContext();
 
+        adapter = new TripAdapter(context, trips);
+        LinearLayoutManager llm = new LinearLayoutManager(context);
+        llm.setOrientation(LinearLayoutManager.VERTICAL);
+        allTrips.setLayoutManager(llm);
+        allTrips.setAdapter(adapter);
+
         getDataFromServer();
+
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
 
-return false;
+                return false;
             }
 
             @Override
@@ -101,18 +108,18 @@ return false;
     public void getDataFromServer() {
         showProgressDialog();
         databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
-           @Override
+            @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
-                            Trip trip = postSnapShot.getValue(Trip.class);
-                            trips.add(trip);
+                        Trip trip = postSnapShot.getValue(Trip.class);
+                        trips.add(trip);
 
 
                     }
                 }
                 hideProgressDialog();
-                adapter = new TripsAdapter(context, trips);
+                adapter = new TripAdapter(context, trips);
                 allTrips.setAdapter(adapter);
 
             }

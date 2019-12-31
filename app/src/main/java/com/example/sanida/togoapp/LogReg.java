@@ -46,6 +46,7 @@ public class LogReg extends AppCompatActivity {
 
     ViewFlipper vf;
     ProgressBar progressBar;
+    FirebaseUser user;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +73,13 @@ public class LogReg extends AppCompatActivity {
         userExists = false;
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
+
+
+        if (auth.getCurrentUser()!=null){
+            Intent i = new Intent(LogReg.this, MainScreen.class);
+            startActivity(i);
+            finish();
+        }
 
         reglog.setOnClickListener(new View.OnClickListener() {
             @Override
