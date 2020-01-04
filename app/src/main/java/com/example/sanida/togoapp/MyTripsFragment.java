@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -27,6 +28,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Objects;
 
 
 public class MyTripsFragment extends Fragment {
@@ -41,6 +44,8 @@ public class MyTripsFragment extends Fragment {
     TripAdapter adapter;
     ArrayList<Trip> trips = new ArrayList<>();
     FirebaseUser user;
+    double cost;
+    TextView costTxt;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,6 +60,9 @@ public class MyTripsFragment extends Fragment {
         auth = FirebaseAuth.getInstance();
         user=auth.getCurrentUser();
         addTripBtn = view.findViewById(R.id.addTripBtn);
+        cost=0;
+        costTxt = view.findViewById(R.id.costTxt);
+        costTxt.setText("TOTAL COST:     " + cost + " BAM");
 
         addTripBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,10 +94,54 @@ public class MyTripsFragment extends Fragment {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot postSnapShot : dataSnapshot.getChildren())
                     {
-                        if (postSnapShot.child("userId").getValue().equals(user.getUid())){
                         Trip trip = postSnapShot.getValue(Trip.class);
+                        if (postSnapShot.child("userId").getValue().equals(user.getUid())){
                         trips.add(trip);
                         }
+
+                        if (trip.getReservations()!=null){
+                           if (trip.getReservations().containsValue(user.getUid())){
+                                trips.add(trip);
+                                System.out.println(trip.getTripName());
+                                cost +=trip.getCost();
+                               costTxt.setText("TOTAL COST:     " + cost + " BAM");
+
+                            }
+                        }
+
+
+                    }
+                }
+                hideProgressDialog();
+                adapter = new TripAdapter(context, trips);
+                allTrips.setAdapter(adapter);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                hideProgressDialog();
+            }
+
+
+        }));
+
+        databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                int repetition = 0;
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren())
+                    {
+                        int seat = Integer.parseInt(postSnapShot.child("maxSeats").getValue().toString())-repetition;
+                        repetition++;
+                        if (postSnapShot.child("seat"+seat).getValue()!=null){
+                            if (postSnapShot.child("seat"+seat).getValue().equals(user.getUid())){
+                                Trip trip = postSnapShot.getValue(Trip.class);
+                                trips.add(trip);
+                            }
+                        }
+
 
 
                     }

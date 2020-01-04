@@ -5,6 +5,7 @@ import com.google.firebase.firestore.Exclude;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class Trip {
 
 
@@ -16,6 +17,7 @@ public class Trip {
     String date;
     String time;
     String carInfo;
+
 
     public Double getCost() {
         return cost;
@@ -30,6 +32,26 @@ public class Trip {
     String userId;
     Boolean driving;
     int seats;
+
+    public HashMap<String, Object> getReservations() {
+        return reservations;
+    }
+
+    public void setReservations(HashMap<String, Object> reservations) {
+        this.reservations = reservations;
+    }
+
+    HashMap<String, Object> reservations;
+
+    public int getMaxSeats() {
+        return maxSeats;
+    }
+
+    public void setMaxSeats(int maxSeats) {
+        this.maxSeats = maxSeats;
+    }
+
+    int maxSeats;
 
     public String getTripId() {
         return tripId;
@@ -55,6 +77,8 @@ public class Trip {
         this.driving = driving;
         this.userId = userId;
         this.cost=cost;
+        this.maxSeats=seats;
+        this.reservations=null;
     }
 
     public String getTripName() {
@@ -137,7 +161,7 @@ public class Trip {
 
     @Exclude
     public Map<String, Object> toMap() {
-        HashMap<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
         result.put("tripId", tripId);
         result.put("tripName", tripName);
         result.put("startLocation", startLocation);
@@ -149,6 +173,8 @@ public class Trip {
         result.put("driving", driving);
         result.put("userId", userId);
         result.put("cost", cost);
+        result.put("maxSeats", maxSeats);
+        result.put("reservations",reservations);
 
 
         return result;

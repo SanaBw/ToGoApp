@@ -8,10 +8,12 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -33,8 +35,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
@@ -129,7 +133,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
                         newTripFragment.editMyTrip(trip);
 
                     } else {
-                        openTrip();
+                        openTrip(trip);
                     }
                 }
             });
@@ -146,11 +150,28 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
 
     private PopupWindow popupWindow;
 
-    public void openTrip() {
+    public void openTrip(final Trip trip) {
         LayoutInflater inflater=(LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.popup,null);
+        final Button messageUser, reserve;
 
         popupWindow = new PopupWindow(layout, ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT);
+        messageUser = layout.findViewById(R.id.messageUserBtn);
+        reserve = layout.findViewById(R.id.reserveBtn);
+
+        if (HomeFragment.alreadyRegistered(trip)){
+            reserve.setVisibility(View.GONE);
+        }
+
+        reserve.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reserveSeat(trip);
+                popupWindow.dismiss();
+                Toast.makeText(context, "Your seat is reserved!", Toast.LENGTH_LONG).show();
+            }
+        });
+
 
 
         if (Build.VERSION.SDK_INT >= 21) {
@@ -168,12 +189,25 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
 
     }
 
+    private void reserveSeat(Trip trip) {
+
+        int seats = Integer.parseInt(trip.getSeats());
+        HashMap<String, Object> reservations;
+        if (trip.getReservations() != null){
+            reservations = trip.getReservations();
+            reservations.put("seat"+seats,currentUser.getUid());
+            FirebaseDatabase.getInstance().getReference().child("/trips").child(trip.getTripId()).child("/reservations").updateChildren(reservations);
+        } else {
+        reservations = new HashMap<>();
+            reservations.put("seat"+seats,currentUser.getUid());
+            FirebaseDatabase.getInstance().getReference().child("/trips").child(trip.getTripId()).child("/reservations").setValue(reservations);
+        }
 
 
+        FirebaseDatabase.getInstance().getReference().child("/trips").child(trip.getTripId()).child("/seats").setValue(seats-1);
+        //refreshdata
 
-
-
-
+    }
 
 
     // convenience method for getting data at click position

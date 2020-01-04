@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import android.app.SearchManager;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.SearchView;
@@ -25,6 +26,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -33,6 +36,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
@@ -50,6 +54,7 @@ public class HomeFragment extends Fragment {
     SearchView searchView;
     View view;
     LayoutInflater inflater;
+    static String user;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -60,6 +65,7 @@ public class HomeFragment extends Fragment {
         searchView = (SearchView) view.findViewById(R.id.searchView);
 
 
+        user = FirebaseAuth.getInstance().getCurrentUser().getUid();
         addTripBtn = view.findViewById(R.id.addTripBtn);
 
         addTripBtn.setOnClickListener(new View.OnClickListener() {
@@ -107,19 +113,22 @@ public class HomeFragment extends Fragment {
 
     public void getDataFromServer() {
         showProgressDialog();
-        databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
+        databaseReference.child("/trips").addListenerForSingleValueEvent((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
                         Trip trip = postSnapShot.getValue(Trip.class);
-                        trips.add(trip);
 
+                        if (Integer.parseInt(trip.getSeats())>0){
+                            trips.add(trip);
+                        }
 
                     }
                 }
                 hideProgressDialog();
                 adapter = new TripAdapter(context, trips);
+                adapter.notifyDataSetChanged();
                 allTrips.setAdapter(adapter);
 
             }
@@ -133,9 +142,29 @@ public class HomeFragment extends Fragment {
         }));
     }
 
+
+    static Boolean registered = false;
+    static boolean alreadyRegistered(final Trip trip) {
+
+       HashMap<String, Object> reservations;
+       if (trip.getReservations() == null){
+           registered=false;
+       } else {
+           reservations = trip.getReservations();
+           if (reservations.containsValue(user)){
+               registered=true;
+           } else {
+               registered=false;
+           }
+       }
+
+        return registered;
+    }
+
+
     private void showProgressDialog() {
         if (mProgressDialog == null) {
-            mProgressDialog = new ProgressDialog(getContext());
+            mProgressDialog = new ProgressDialog(context);
             mProgressDialog.setMessage("Loading...");
             mProgressDialog.setIndeterminate(true);
         }
