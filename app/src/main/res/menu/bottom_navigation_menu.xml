@@ -11,6 +11,10 @@
         android:id="@+id/chat"
         android:icon="@drawable/chat" />
     <item
+        android:title="requests"
+        android:id="@+id/requests"
+        android:icon="@drawable/notification" />
+    <item
         android:title="my trips"
         android:id="@+id/myTrips"
         android:icon="@drawable/car" />

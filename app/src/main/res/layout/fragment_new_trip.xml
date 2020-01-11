@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/road"
-    tools:context="com.example.sanida.togoapp.NewTripFragment">
+    tools:context="com.example.sanida.togoapp.Fragments.NewTripFragment">
 
     <ScrollView
         android:layout_width="match_parent"

@@ -1,19 +1,12 @@
-package com.example.sanida.togoapp;
+package com.example.sanida.togoapp.Fragments;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
-import android.app.SearchManager;
-import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.SearchView;
-import android.widget.SearchView.OnQueryTextListener;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -23,12 +16,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 
+import com.example.sanida.togoapp.R;
+import com.example.sanida.togoapp.Models.Trip;
+import com.example.sanida.togoapp.Adapters.TripAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,8 +30,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
 
 public class HomeFragment extends Fragment {
@@ -120,7 +111,7 @@ public class HomeFragment extends Fragment {
                     for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
                         Trip trip = postSnapShot.getValue(Trip.class);
 
-                        if (Integer.parseInt(trip.getSeats())>0){
+                        if (trip.getSeats()>0){
                             trips.add(trip);
                         }
 
@@ -144,7 +135,7 @@ public class HomeFragment extends Fragment {
 
 
     static Boolean registered = false;
-    static boolean alreadyRegistered(final Trip trip) {
+    public static boolean alreadyRegistered(final Trip trip) {
 
        HashMap<String, Object> reservations;
        if (trip.getReservations() == null){

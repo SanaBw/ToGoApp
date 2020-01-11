@@ -1,4 +1,4 @@
-package com.example.sanida.togoapp;
+package com.example.sanida.togoapp.Fragments;
 
 import android.app.ExpandableListActivity;
 import android.app.ProgressDialog;
@@ -24,6 +24,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.annotation.GlideModule;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.sanida.togoapp.LogReg;
+import com.example.sanida.togoapp.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;

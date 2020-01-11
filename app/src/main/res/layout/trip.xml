@@ -118,11 +118,11 @@
             android:id="@+id/userPhoto"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="8dp"
             android:scaleType="center"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/costTxt"
-            tools:srcCompat="@tools:sample/avatars" />
+            tools:srcCompat="@drawable/placeholder" />
 
         <ImageView
             android:id="@+id/imageView"

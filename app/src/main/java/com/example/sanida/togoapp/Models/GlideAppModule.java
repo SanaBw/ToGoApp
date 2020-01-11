@@ -1,4 +1,4 @@
-package com.example.sanida.togoapp;
+package com.example.sanida.togoapp.Models;
 
 import android.content.Context;
 

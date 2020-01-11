@@ -1,8 +1,6 @@
-package com.example.sanida.togoapp;
+package com.example.sanida.togoapp.Adapters;
 
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Build;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -10,22 +8,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.sanida.togoapp.Fragments.HomeFragment;
+import com.example.sanida.togoapp.Fragments.NewTripFragment;
+import com.example.sanida.togoapp.Models.Request;
+import com.example.sanida.togoapp.R;
+import com.example.sanida.togoapp.Models.Trip;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -36,10 +35,9 @@ import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
@@ -55,7 +53,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
 
 
     // data is passed into the constructor
-    TripAdapter(Context context, ArrayList<Trip> trips) {
+public TripAdapter(Context context, ArrayList<Trip> trips) {
         this.context=context;
         layoutInflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
         this.trips=trips;
@@ -77,6 +75,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Trip trip=trips.get(position);
+
         holder.trip = trips.get(position);
         holder.tripId=trip.getTripId();
         holder.user = trip.getUserId();
@@ -106,7 +105,8 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView tripStart,tripEnd, tripDate, tripSeats, tripDriving, tripUser, tripCost;
         ImageView userImg;
-        String user, tripId;
+        String user;
+        String tripId;
         Trip trip;
 
 
@@ -189,9 +189,18 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
 
     }
 
-    private void reserveSeat(Trip trip) {
+    private void reserveSeat(Trip trip){
+        String owner = trip.getUserId();
+        String rider = FirebaseAuth.getInstance().getUid();
+        Boolean accepted=false;
+        String requestId = UUID.randomUUID().toString();
+        Request request = new Request(owner,rider,accepted,trip);
+        FirebaseDatabase.getInstance().getReference().child("/requests").child(requestId).setValue(request);
 
-        int seats = Integer.parseInt(trip.getSeats());
+    }
+    private void confirmSeat(Trip trip) {
+
+        int seats = trip.getSeats();
         HashMap<String, Object> reservations;
         if (trip.getReservations() != null){
             reservations = trip.getReservations();

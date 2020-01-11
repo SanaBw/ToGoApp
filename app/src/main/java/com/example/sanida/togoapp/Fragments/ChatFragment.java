@@ -1,4 +1,4 @@
-package com.example.sanida.togoapp;
+package com.example.sanida.togoapp.Fragments;
 
 import android.content.Context;
 import android.net.Uri;
@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.sanida.togoapp.R;
 
 
 public class ChatFragment extends Fragment {

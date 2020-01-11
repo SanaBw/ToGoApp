@@ -1,4 +1,4 @@
-package com.example.sanida.togoapp;
+package com.example.sanida.togoapp.Models;
 
 import com.google.firebase.firestore.Exclude;
 
@@ -65,7 +65,7 @@ public class Trip {
 
     }
 
-    public Trip(String tripId, String tripName,String startLocation,String endLocation,String date,String time,String carInfo, int seats, Boolean driving, String userId, Double cost) {
+    public Trip(String tripId, String tripName, String startLocation, String endLocation, String date, String time, String carInfo, int seats, Boolean driving, String userId, Double cost) {
         this.tripId=tripId;
         this.tripName = tripName;
         this.startLocation = startLocation;
@@ -137,8 +137,8 @@ public class Trip {
         this.driving = driving;
     }
 
-    public String getSeats() {
-        return String.valueOf(seats);
+    public int getSeats() {
+        return seats;
     }
 
     public void setSeats(int seats) {

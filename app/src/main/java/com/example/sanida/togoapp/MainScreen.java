@@ -1,7 +1,6 @@
 package com.example.sanida.togoapp;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -10,13 +9,14 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import com.example.sanida.togoapp.Fragments.ChatFragment;
+import com.example.sanida.togoapp.Fragments.HomeFragment;
+import com.example.sanida.togoapp.Fragments.MyTripsFragment;
+import com.example.sanida.togoapp.Fragments.ProfileFragment;
+import com.example.sanida.togoapp.Fragments.RequestFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
 
 public class MainScreen extends AppCompatActivity {
 
@@ -74,6 +74,11 @@ public class MainScreen extends AppCompatActivity {
                     case (R.id.chat): {
                         ft.setCustomAnimations(R.anim.slide_left_in, R.anim.slide_right_out);
                         ft.replace(R.id.fragmentFrame, new ChatFragment());
+                        break;
+                    }
+                    case (R.id.requests): {
+                        ft.setCustomAnimations(R.anim.slide_left_in, R.anim.slide_right_out);
+                        ft.replace(R.id.fragmentFrame, new RequestFragment());
                         break;
                     }
 

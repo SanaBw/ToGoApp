@@ -2,17 +2,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.sanida.togoapp.Fragments.ChatFragment">
+    tools:context="com.example.sanida.togoapp.Fragments.RequestFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/chatView"
+            android:id="@+id/requestView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:listitem="@layout/chat" />
+            android:layout_height="wrap_content"
+            tools:listitem="@layout/request" />
+
     </LinearLayout>
+
 </FrameLayout>

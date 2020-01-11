@@ -1,8 +1,7 @@
-package com.example.sanida.togoapp;
+package com.example.sanida.togoapp.Fragments;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,10 +13,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.sanida.togoapp.Adapters.RequestAdapter;
+import com.example.sanida.togoapp.Models.Request;
+import com.example.sanida.togoapp.R;
+import com.example.sanida.togoapp.Models.Trip;
+import com.example.sanida.togoapp.Adapters.TripAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -28,8 +30,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
 
 
 public class MyTripsFragment extends Fragment {
@@ -42,7 +42,9 @@ public class MyTripsFragment extends Fragment {
     ProgressDialog mProgressDialog;
     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
     TripAdapter adapter;
+
     ArrayList<Trip> trips = new ArrayList<>();
+
     FirebaseUser user;
     double cost;
     TextView costTxt;
@@ -126,6 +128,7 @@ public class MyTripsFragment extends Fragment {
 
         }));
 
+        showProgressDialog();
         databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
