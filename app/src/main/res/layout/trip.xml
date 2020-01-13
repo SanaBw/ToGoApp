@@ -119,10 +119,10 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginStart="8dp"
-            android:scaleType="center"
+            android:scaleType="centerInside"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/costTxt"
-            tools:srcCompat="@drawable/placeholder" />
+            app:srcCompat="@drawable/placeholder" />
 
         <ImageView
             android:id="@+id/imageView"
@@ -165,4 +165,15 @@
             app:srcCompat="@drawable/time" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/additionalnfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:background="@android:color/white"
+        android:gravity="end"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
 </LinearLayout>

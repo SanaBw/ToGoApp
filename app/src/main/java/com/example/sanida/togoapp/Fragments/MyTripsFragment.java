@@ -15,8 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.sanida.togoapp.Adapters.RequestAdapter;
-import com.example.sanida.togoapp.Models.Request;
+import com.example.sanida.togoapp.Models.User;
 import com.example.sanida.togoapp.R;
 import com.example.sanida.togoapp.Models.Trip;
 import com.example.sanida.togoapp.Adapters.TripAdapter;
@@ -30,6 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 
 public class MyTripsFragment extends Fragment {
@@ -38,10 +38,11 @@ public class MyTripsFragment extends Fragment {
     Context context;
     FirebaseAuth auth;
     FragmentTransaction ft;
-    RecyclerView allTrips;
+    RecyclerView myTripsRecView;
     ProgressDialog mProgressDialog;
     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
     TripAdapter adapter;
+    String currentUser;
 
     ArrayList<Trip> trips = new ArrayList<>();
 
@@ -60,7 +61,7 @@ public class MyTripsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_my_trips, container, false);
         auth = FirebaseAuth.getInstance();
-        user=auth.getCurrentUser();
+        currentUser=auth.getCurrentUser().getUid();
         addTripBtn = view.findViewById(R.id.addTripBtn);
         cost=0;
         costTxt = view.findViewById(R.id.costTxt);
@@ -75,13 +76,13 @@ public class MyTripsFragment extends Fragment {
             }
         });
 
-        allTrips = view.findViewById(R.id.tripsView);
+        myTripsRecView = view.findViewById(R.id.tripsView);
         context = getContext();
 
         adapter = new TripAdapter(context, trips);
         LinearLayoutManager llm = new LinearLayoutManager(context);
-        allTrips.setLayoutManager(llm);
-        allTrips.setAdapter( adapter );
+        myTripsRecView.setLayoutManager(llm);
+        myTripsRecView.setAdapter( adapter );
 
         getDataFromServer();
 
@@ -90,23 +91,22 @@ public class MyTripsFragment extends Fragment {
 
     public void getDataFromServer() {
         showProgressDialog();
-        databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
+            databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot postSnapShot : dataSnapshot.getChildren())
                     {
                         Trip trip = postSnapShot.getValue(Trip.class);
-                        if (postSnapShot.child("userId").getValue().equals(user.getUid())){
+                        if (postSnapShot.child("user").child("id").getValue().equals(currentUser)){
                         trips.add(trip);
                         }
 
-                        if (trip.getReservations()!=null){
-                           if (trip.getReservations().containsValue(user.getUid())){
+                        if (trip.getRiders()!=null){
+                            if (trip.getRiders().containsValue(currentUser)){
                                 trips.add(trip);
-                                System.out.println(trip.getTripName());
                                 cost +=trip.getCost();
-                               costTxt.setText("TOTAL COST:     " + cost + " BAM");
+                                costTxt.setText("TOTAL COST:     " + cost + " BAM");
 
                             }
                         }
@@ -116,7 +116,7 @@ public class MyTripsFragment extends Fragment {
                 }
                 hideProgressDialog();
                 adapter = new TripAdapter(context, trips);
-                allTrips.setAdapter(adapter);
+                myTripsRecView.setAdapter(adapter);
 
             }
 
@@ -151,7 +151,7 @@ public class MyTripsFragment extends Fragment {
                 }
                 hideProgressDialog();
                 adapter = new TripAdapter(context, trips);
-                allTrips.setAdapter(adapter);
+                myTripsRecView.setAdapter(adapter);
 
             }
 

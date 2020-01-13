@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import android.widget.SearchView;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,6 +18,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.sanida.togoapp.Models.Request;
+import com.example.sanida.togoapp.Models.User;
 import com.example.sanida.togoapp.R;
 import com.example.sanida.togoapp.Models.Trip;
 import com.example.sanida.togoapp.Adapters.TripAdapter;
@@ -29,7 +32,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
 public class HomeFragment extends Fragment {
@@ -37,7 +39,7 @@ public class HomeFragment extends Fragment {
     FloatingActionButton addTripBtn;
     Context context;
     FragmentTransaction ft;
-    RecyclerView allTrips;
+    RecyclerView tripsRecView;
     ProgressDialog mProgressDialog;
     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
     TripAdapter adapter;
@@ -69,14 +71,14 @@ public class HomeFragment extends Fragment {
         });
 
 
-        allTrips = view.findViewById(R.id.tripsView);
+        tripsRecView = view.findViewById(R.id.tripsView);
         context = getContext();
 
         adapter = new TripAdapter(context, trips);
         LinearLayoutManager llm = new LinearLayoutManager(context);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
-        allTrips.setLayoutManager(llm);
-        allTrips.setAdapter(adapter);
+        tripsRecView.setLayoutManager(llm);
+        tripsRecView.setAdapter(adapter);
 
         getDataFromServer();
 
@@ -98,6 +100,11 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        FragmentManager fm = getFragmentManager(); // or 'getSupportFragmentManager();'
+        int count = fm.getBackStackEntryCount();
+        for(int i = 0; i < count; ++i) {
+            fm.popBackStack();
+        }
 
         return view;
     }
@@ -120,7 +127,7 @@ public class HomeFragment extends Fragment {
                 hideProgressDialog();
                 adapter = new TripAdapter(context, trips);
                 adapter.notifyDataSetChanged();
-                allTrips.setAdapter(adapter);
+                tripsRecView.setAdapter(adapter);
 
             }
 
@@ -134,22 +141,35 @@ public class HomeFragment extends Fragment {
     }
 
 
-    static Boolean registered = false;
-    public static boolean alreadyRegistered(final Trip trip) {
+    static Boolean requested = false;
+    public static boolean alreadyRequested(final User rider, final Trip trip) {
 
-       HashMap<String, Object> reservations;
-       if (trip.getReservations() == null){
-           registered=false;
-       } else {
-           reservations = trip.getReservations();
-           if (reservations.containsValue(user)){
-               registered=true;
-           } else {
-               registered=false;
-           }
-       }
+        FirebaseDatabase.getInstance().getReference().child("/requests").addValueEventListener((new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
+                       Request request = postSnapShot.getValue(Request.class);
+                       if (request.getRider().getId().equals(rider.getId()) && request.getTrip().getTripId().equals(trip.getTripId())){
+                           requested = true;
+                       } else {
+                           requested=false;
+                       }
 
-        return registered;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+
+
+        }));
+
+
+        return requested;
     }
 
 

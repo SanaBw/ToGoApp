@@ -13,7 +13,22 @@
             android:id="@+id/requestView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:listitem="@layout/request" />
+            android:background="@android:color/black"
+            android:visibility="visible"
+            tools:listitem="@layout/request">
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+        <TextView
+            android:id="@+id/noreq"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:paddingTop="100dp"
+            android:text="No requests. Yet!"
+            android:textSize="18sp"
+            android:visibility="visible" />
 
     </LinearLayout>
 

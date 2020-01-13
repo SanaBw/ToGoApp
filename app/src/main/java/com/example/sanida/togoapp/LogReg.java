@@ -257,6 +257,11 @@ public class LogReg extends AppCompatActivity {
             });
         }
     }
+
+    @Override
+    public void onBackPressed() {
+
+    }
 }
 
 

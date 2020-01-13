@@ -8,6 +8,19 @@ import java.util.Map;
 public class User {
 
     String name;
+
+public User(){
+
+}
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    String id;
     String email;
 
     public String getName() {
@@ -34,7 +47,8 @@ public class User {
         this.photo = photo;
     }
 
-    public User(String name, String email, String photo) {
+    public User(String id, String name, String email, String photo) {
+        this.id=id;
         this.name = name;
         this.email = email;
         this.photo = photo;
@@ -48,6 +62,7 @@ public class User {
         result.put("name", name);
         result.put("email", email);
         result.put("photo", photo);
+        result.put("id", id);
 
 
 

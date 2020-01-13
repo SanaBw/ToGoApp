@@ -2,6 +2,7 @@ package com.example.sanida.togoapp;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.widget.Button;
 import com.example.sanida.togoapp.Fragments.ChatFragment;
 import com.example.sanida.togoapp.Fragments.HomeFragment;
 import com.example.sanida.togoapp.Fragments.MyTripsFragment;
+import com.example.sanida.togoapp.Fragments.NewTripFragment;
 import com.example.sanida.togoapp.Fragments.ProfileFragment;
 import com.example.sanida.togoapp.Fragments.RequestFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -88,5 +90,14 @@ public class MainScreen extends AppCompatActivity {
 
             }
         });
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        Fragment f = this.getSupportFragmentManager().findFragmentById(R.id.fragmentFrame);
+        if (f instanceof NewTripFragment){
+            super.onBackPressed();
+        }
     }
 }

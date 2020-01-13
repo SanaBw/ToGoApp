@@ -2,7 +2,9 @@ package com.example.sanida.togoapp.Fragments;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
@@ -13,12 +15,17 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sanida.togoapp.Adapters.TripAdapter;
+import com.example.sanida.togoapp.Models.User;
 import com.example.sanida.togoapp.R;
 import com.example.sanida.togoapp.Models.Trip;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -37,9 +44,6 @@ public class NewTripFragment extends Fragment {
     String date;
     String time;
     String carInfo;
-    String userId;
-    String userName;
-    String userPhoto;
     double cost;
     Boolean driving;
     int seats;
@@ -47,7 +51,7 @@ public class NewTripFragment extends Fragment {
     CheckBox drivingBox;
     Button saveBtn;
 
-    FirebaseUser user;
+    User user;
     FirebaseDatabase database;
     String userPath;
     FirebaseStorage storage;
@@ -89,8 +93,7 @@ public class NewTripFragment extends Fragment {
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
-        user = auth.getCurrentUser();
-        userPath = user.getUid();
+        userPath = FirebaseAuth.getInstance().getCurrentUser().getUid();
         dbRef = FirebaseDatabase.getInstance().getReference().child("/trips");
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
@@ -109,19 +112,32 @@ public class NewTripFragment extends Fragment {
            editing=true;
            title.setText("Let's edit this trip!");
            tripId=editableTrip.getTripId();
-           System.out.println(tripId);
            tripNameTxt.setText(editableTrip.getTripName());
            startTxt.setText(editableTrip.getStartLocation());
            endTxt.setText(editableTrip.getEndLocation());
            dateTxt.setText(editableTrip.getDate());
            timeTxt.setText(editableTrip.getTime());
            carInfoTxt.setText(editableTrip.getCarInfo());
-           seatsTxt.setText(editableTrip.getSeats());
+           seatsTxt.setText(String.valueOf(editableTrip.getSeats()));
            if (editableTrip.getDriving()){
                drivingBox.setChecked(true);
            }
            costTxt.setText(String.format("%1$,.2f",editableTrip.getCost()));
        }
+
+        FirebaseDatabase.getInstance().getReference().child("/users").child(auth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    user = dataSnapshot.getValue(User.class);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
         return v;
     }
 
@@ -129,7 +145,6 @@ public class NewTripFragment extends Fragment {
         this.editableTrip=trip;
 
     }
-
 
 
     private void saveTrip() {
@@ -164,7 +179,7 @@ public class NewTripFragment extends Fragment {
         }else if(!isValidTime(time)) {
             Toast.makeText(getContext(), "Time not valid!", Toast.LENGTH_LONG).show();
         }else{
-            Trip trip = new Trip(tripId, tripName, startLocation, endLocation, date, time, carInfo, seats, driving, user.getUid(), cost);
+            Trip trip = new Trip(tripId, tripName, startLocation, endLocation, date, time, carInfo, seats, driving, user, cost);
             dbRef.child(tripId).setValue(trip.toMap());
 
 
@@ -200,6 +215,8 @@ public class NewTripFragment extends Fragment {
             return false;
         }
     }
+
+
 
 
 

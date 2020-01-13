@@ -138,9 +138,10 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 auth.signOut();
-                getActivity().onBackPressed();
+                getActivity().finish();
                 Intent i = new Intent(getContext(), LogReg.class);
                 startActivity(i);
+
             }
         });
 

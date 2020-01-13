@@ -2,6 +2,7 @@ package com.example.sanida.togoapp.Models;
 
 import com.google.firebase.firestore.Exclude;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,19 +30,24 @@ public class Trip {
 
     Double cost;
 
-    String userId;
+    User user;
     Boolean driving;
     int seats;
 
-    public HashMap<String, Object> getReservations() {
-        return reservations;
+    public HashMap<String, Object> getRiders() {
+
+        return riders;
     }
 
-    public void setReservations(HashMap<String, Object> reservations) {
-        this.reservations = reservations;
+    public void setRiders(HashMap<String, Object> riders) {
+
+        this.riders = riders;
     }
 
-    HashMap<String, Object> reservations;
+
+
+
+    HashMap<String, Object> riders;
 
     public int getMaxSeats() {
         return maxSeats;
@@ -65,7 +71,7 @@ public class Trip {
 
     }
 
-    public Trip(String tripId, String tripName, String startLocation, String endLocation, String date, String time, String carInfo, int seats, Boolean driving, String userId, Double cost) {
+    public Trip(String tripId, String tripName, String startLocation, String endLocation, String date, String time, String carInfo, int seats, Boolean driving, User user, Double cost) {
         this.tripId=tripId;
         this.tripName = tripName;
         this.startLocation = startLocation;
@@ -75,10 +81,10 @@ public class Trip {
         this.carInfo = carInfo;
         this.seats=seats;
         this.driving = driving;
-        this.userId = userId;
+        this.user = user;
         this.cost=cost;
         this.maxSeats=seats;
-        this.reservations=null;
+        this.riders =null;
     }
 
     public String getTripName() {
@@ -147,13 +153,13 @@ public class Trip {
 
 
 
-    public String getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
 
@@ -171,12 +177,14 @@ public class Trip {
         result.put("carInfo", carInfo);
         result.put("seats", seats);
         result.put("driving", driving);
-        result.put("userId", userId);
+        result.put("user", user);
         result.put("cost", cost);
         result.put("maxSeats", maxSeats);
-        result.put("reservations",reservations);
+        result.put("riders", riders);
 
 
         return result;
     }
+
+
 }

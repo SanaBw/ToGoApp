@@ -7,17 +7,21 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.sanida.togoapp.Adapters.RequestAdapter;
 import com.example.sanida.togoapp.Adapters.TripAdapter;
 import com.example.sanida.togoapp.Models.Request;
 import com.example.sanida.togoapp.Models.Trip;
+import com.example.sanida.togoapp.Models.User;
 import com.example.sanida.togoapp.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -41,6 +45,7 @@ public class RequestFragment extends Fragment {
     RequestAdapter reqAdapter;
     ArrayList<Request> requests = new ArrayList<>();
     String user;
+    TextView noReqTxt;
 
 
     @Override
@@ -50,6 +55,7 @@ public class RequestFragment extends Fragment {
         auth = FirebaseAuth.getInstance();
 
         allRequests = view.findViewById(R.id.requestView);
+        noReqTxt = view.findViewById(R.id.noreq);
         context = getContext();
         user=auth.getCurrentUser().getUid();
 
@@ -59,6 +65,8 @@ public class RequestFragment extends Fragment {
         allRequests.setAdapter( reqAdapter );
 
         getDataFromServer();
+
+
 
 
         return view;
@@ -85,31 +93,39 @@ public class RequestFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren())
+                for (DataSnapshot postSnapShot : dataSnapshot.getChildren())
                     {
                         try {
+                            System.out.println(postSnapShot);
+                            System.out.println(postSnapShot.child("owner"));
+                            System.out.println(user);
+                            System.out.println(postSnapShot.child("id").getValue().toString());
                             Request request = new Request();
-                            request.setOwner(postSnapShot.child("owner").getValue().toString());
-                            request.setRider(postSnapShot.child("rider").getValue().toString());
-                            request.setAccepted((Boolean) postSnapShot.child("accepted").getValue());
+                            request.setId(postSnapShot.child("id").getValue().toString());
+                            request.setOwner(postSnapShot.child("owner").getValue(User.class));
+                            request.setRider(postSnapShot.child("rider").getValue(User.class));
                             Trip trip = postSnapShot.child("trip").getValue(Trip.class);
                             request.setTrip(trip);
-                            if (postSnapShot.child("owner").getValue().equals(user)){
+                            if (postSnapShot.child("owner").child("id").getValue().equals(user)){
                                 requests.add(request);
                             }
                         }catch (Exception e){
                             e.printStackTrace();
 
-
                         }
 
 
 
-                    }
-                }
+
+                    }}
+
                 hideProgressDialog();
                 reqAdapter = new RequestAdapter(context, requests);
                 allRequests.setAdapter(reqAdapter);
+
+                if (requests.size()>0){
+                    noReqTxt.setVisibility(View.GONE);
+                }
 
             }
 
@@ -122,5 +138,10 @@ public class RequestFragment extends Fragment {
         }));
 
     }
+
+
+
+
+
 
 }
