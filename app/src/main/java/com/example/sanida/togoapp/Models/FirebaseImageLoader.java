@@ -23,39 +23,10 @@ import java.security.MessageDigest;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-/**
- * ModelLoader implementation to download images from FirebaseStorage with Glide.
- *
- * <p>
- * First, register this class in your AppGlideModule:
- * <pre>
- *         {@literal @}Override
- *         public void registerComponents(Context context, Registry registry) {
- *             // Register FirebaseImageLoader to handle StorageReference
- *             registry.append(StorageReference.class, InputStream.class,
- *                     new FirebaseImageLoader.Factory());
- *         }
- * </pre>
- *
- * <p>
- * Then load a StorageReference into an ImageView.
- * <pre>
- *     StorageReference ref = FirebaseStorage.getInstance().getReference().child("myimage");
- *     ImageView iv = (ImageView) findViewById(R.id.my_image_view);
- *
- *     GlideApp.with(this)
- *         .load(ref)
- *         .into(iv);
- * </pre>
- */
 public class FirebaseImageLoader implements ModelLoader<StorageReference, InputStream> {
 
     private static final String TAG = "FirebaseImageLoader";
 
-
-    /**
-     * Factory to create {@link FirebaseImageLoader}.
-     */
     public static class Factory implements ModelLoaderFactory<StorageReference, InputStream> {
 
         @NonNull
@@ -66,28 +37,26 @@ public class FirebaseImageLoader implements ModelLoader<StorageReference, InputS
 
         @Override
         public void teardown() {
-            // No-op
         }
     }
 
+
     @Nullable
     @Override
-    public LoadData<InputStream> buildLoadData(@NonNull StorageReference reference,
-                                               int height,
-                                               int width,
-                                               @NonNull Options options) {
+    public LoadData<InputStream> buildLoadData(@NonNull StorageReference reference, int height, int width, @NonNull Options options) {
         return new LoadData<>(
                 new FirebaseStorageKey(reference),
                 new FirebaseStorageFetcher(reference));
     }
+
 
     @Override
     public boolean handles(@NonNull StorageReference reference) {
         return true;
     }
 
-    private static class FirebaseStorageKey implements Key {
 
+    private static class FirebaseStorageKey implements Key {
         private StorageReference mRef;
 
         public FirebaseStorageKey(StorageReference ref) {
@@ -103,7 +72,6 @@ public class FirebaseImageLoader implements ModelLoader<StorageReference, InputS
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-
             FirebaseStorageKey key = (FirebaseStorageKey) o;
 
             return mRef.equals(key.mRef);
@@ -115,8 +83,8 @@ public class FirebaseImageLoader implements ModelLoader<StorageReference, InputS
         }
     }
 
-    private static class FirebaseStorageFetcher implements DataFetcher<InputStream> {
 
+    private static class FirebaseStorageFetcher implements DataFetcher<InputStream> {
         private StorageReference mRef;
         private StreamDownloadTask mStreamTask;
         private InputStream mInputStream;
@@ -126,8 +94,7 @@ public class FirebaseImageLoader implements ModelLoader<StorageReference, InputS
         }
 
         @Override
-        public void loadData(@NonNull Priority priority,
-                             @NonNull final DataCallback<? super InputStream> callback) {
+        public void loadData(@NonNull Priority priority, @NonNull final DataCallback<? super InputStream> callback) {
             mStreamTask = mRef.getStream();
             mStreamTask
                     .addOnSuccessListener(new OnSuccessListener<StreamDownloadTask.TaskSnapshot>() {
@@ -147,7 +114,6 @@ public class FirebaseImageLoader implements ModelLoader<StorageReference, InputS
 
         @Override
         public void cleanup() {
-            // Close stream if possible
             if (mInputStream != null) {
                 try {
                     mInputStream.close();
@@ -160,7 +126,6 @@ public class FirebaseImageLoader implements ModelLoader<StorageReference, InputS
 
         @Override
         public void cancel() {
-            // Cancel task if possible
             if (mStreamTask != null && mStreamTask.isInProgress()) {
                 mStreamTask.cancel();
             }

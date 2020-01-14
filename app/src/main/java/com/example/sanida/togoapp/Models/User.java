@@ -7,54 +7,59 @@ import java.util.Map;
 
 public class User {
 
-    String name;
+    private String name, photo, id, email;
 
-public User(){
 
-}
+    public User() {}
+
+
+    public User(String id, String name, String email, String photo) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.photo = photo;
+    }
+
+
     public String getId() {
         return id;
     }
+
 
     public void setId(String id) {
         this.id = id;
     }
 
-    String id;
-    String email;
 
     public String getName() {
         return name;
     }
 
+
     public void setName(String name) {
         this.name = name;
     }
+
 
     public String getEmail() {
         return email;
     }
 
+
     public void setEmail(String email) {
         this.email = email;
     }
+
 
     public String getPhoto() {
         return photo;
     }
 
+
     public void setPhoto(String photo) {
         this.photo = photo;
     }
 
-    public User(String id, String name, String email, String photo) {
-        this.id=id;
-        this.name = name;
-        this.email = email;
-        this.photo = photo;
-    }
-
-    String photo;
 
     @Exclude
     public Map<String, Object> toMap() {
@@ -63,8 +68,6 @@ public User(){
         result.put("email", email);
         result.put("photo", photo);
         result.put("id", id);
-
-
 
         return result;
     }

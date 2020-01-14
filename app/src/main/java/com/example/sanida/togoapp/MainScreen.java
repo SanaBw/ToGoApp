@@ -5,10 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.Button;
 
 import com.example.sanida.togoapp.Fragments.ChatFragment;
 import com.example.sanida.togoapp.Fragments.HomeFragment;
@@ -17,40 +15,22 @@ import com.example.sanida.togoapp.Fragments.NewTripFragment;
 import com.example.sanida.togoapp.Fragments.ProfileFragment;
 import com.example.sanida.togoapp.Fragments.RequestFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 public class MainScreen extends AppCompatActivity {
 
+    private FragmentTransaction ft;
 
-    Button signOut;
-    FirebaseAuth auth = FirebaseAuth.getInstance();
-    BottomNavigationView bottomNavigationView;
-    FragmentTransaction ft;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
-        bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
 
         ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.fragmentFrame, new HomeFragment());
         ft.commit();
-
-        FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
-
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user == null) {
-                    startActivity(new Intent(MainScreen.this, LogReg.class));
-                    finish();
-                }
-            }
-        };
-
 
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -85,9 +65,10 @@ public class MainScreen extends AppCompatActivity {
                     }
 
                 }
-                ft.commit();
-                return true;
 
+                ft.commit();
+
+                return true;
             }
         });
     }
@@ -96,7 +77,7 @@ public class MainScreen extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Fragment f = this.getSupportFragmentManager().findFragmentById(R.id.fragmentFrame);
-        if (f instanceof NewTripFragment){
+        if (f instanceof NewTripFragment) {
             super.onBackPressed();
         }
     }

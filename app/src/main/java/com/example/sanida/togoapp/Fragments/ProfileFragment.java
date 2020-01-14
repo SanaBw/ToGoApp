@@ -1,6 +1,5 @@
 package com.example.sanida.togoapp.Fragments;
 
-import android.app.ExpandableListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -21,19 +20,14 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.annotation.GlideModule;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.sanida.togoapp.LogReg;
 import com.example.sanida.togoapp.R;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -50,56 +44,39 @@ import java.util.UUID;
 
 public class ProfileFragment extends Fragment {
 
-    ImageView profileImg;
-    View view;
-    Button signOutBtn, saveBtn, editBtn;
-    EditText nameTxt, passwordTxt;
-
+    private ImageView profileImg;
+    private EditText nameTxt, passwordTxt;
     private Uri filePath;
-    FirebaseStorage storage;
-    StorageReference storageReference;
-    static FirebaseAuth auth;
-    DatabaseReference dbRef;
-    FirebaseUser user;
-    String imagePath;
-    FirebaseDatabase database;
-    String userPath;
-    String username, email;
-
+    private StorageReference storageReference;
+    private static FirebaseAuth auth;
+    private DatabaseReference dbRef;
+    private FirebaseUser user;
+    private String imagePath;
+    private String userPath;
+    private String username, email;
     private final int PICK_IMAGE_REQUEST = 71;
 
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_profile, container, false);
-        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        Button signOutBtn = view.findViewById(R.id.signOutBtn);
+        Button saveBtn = view.findViewById(R.id.saveBtn);
+        Button editBtn = view.findViewById(R.id.editBtn);
 
         auth = FirebaseAuth.getInstance();
-        database = FirebaseDatabase.getInstance();
         user = auth.getCurrentUser();
         userPath = user.getUid();
         dbRef = FirebaseDatabase.getInstance().getReference().child("/users");
-
-
-
-
         profileImg = view.findViewById(R.id.profileImg);
-        storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
-        signOutBtn = view.findViewById(R.id.signOutBtn);
-        saveBtn = view.findViewById(R.id.saveBtn);
         nameTxt = view.findViewById(R.id.nameTxt);
-        editBtn = view.findViewById(R.id.editBtn);
         passwordTxt = view.findViewById(R.id.passwordTxt);
 
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
-            fetchUserData();
-
-
-
-
-
-
+        fetchUserData();
 
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -141,12 +118,12 @@ public class ProfileFragment extends Fragment {
                 getActivity().finish();
                 Intent i = new Intent(getContext(), LogReg.class);
                 startActivity(i);
-
             }
         });
 
         return view;
     }
+
 
     private void updateUserData(String newUsername, String newPw) {
 
@@ -159,7 +136,6 @@ public class ProfileFragment extends Fragment {
             });
         }
 
-
         if (!newPw.isEmpty() && !newPw.equals("")) {
             user.updatePassword(newPw).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
@@ -171,28 +147,9 @@ public class ProfileFragment extends Fragment {
                 public void onFailure(@NonNull Exception e) {
                     Toast.makeText(getContext(), "Something went wrong. Try again with a different or longer password!", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
-
                 }
             });
         }
-
-
-    }
-
-    static boolean exists;
-
-    public static boolean userExists(String email) {
-        auth.fetchSignInMethodsForEmail(email)
-                .addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
-
-                        exists = !task.getResult().getSignInMethods().isEmpty();
-
-
-                    }
-                });
-        return exists;
     }
 
 
@@ -201,7 +158,9 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 username = dataSnapshot.child("name").getValue().toString();
-                if (dataSnapshot.hasChild("photo")){
+                nameTxt.setText(username);
+
+                if (dataSnapshot.hasChild("photo")) {
                     imagePath = dataSnapshot.child("photo").getValue().toString();
                     Glide.with(getContext())
                             .load(storageReference.child("/images").child(imagePath))
@@ -209,21 +168,20 @@ public class ProfileFragment extends Fragment {
                             .apply(RequestOptions.circleCropTransform())
                             .into(profileImg);
                 }
-                email = user.getEmail();
+
                 if (!email.equals(dbRef.child(userPath).child("email"))) {
                     dbRef.child(userPath).child("email").setValue(email);
                 }
-                nameTxt.setText(username);
 
-
+                email = user.getEmail();
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                // ...
             }
         });
     }
+
 
     private void chooseImage() {
         Intent intent = new Intent();
@@ -232,11 +190,14 @@ public class ProfileFragment extends Fragment {
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
     }
 
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == -1
                 && data != null && data.getData() != null) {
             filePath = data.getData();
+
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), filePath);
                 profileImg.setImageBitmap(bitmap);
@@ -247,16 +208,16 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+
     private void uploadImage() {
+        final String imgId = UUID.randomUUID().toString();
+        StorageReference ref = storageReference.child("images/" + imgId);
 
         if (filePath != null) {
             final ProgressDialog progressDialog = new ProgressDialog(getContext());
             progressDialog.setTitle("Uploading...");
             progressDialog.show();
 
-            final String imgId = UUID.randomUUID().toString();
-
-            StorageReference ref = storageReference.child("images/" + imgId);
             ref.putFile(filePath)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -282,18 +243,15 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private void addPhotoPath(String imgId) {
 
+    private void addPhotoPath(String imgId) {
         dbRef.child(userPath).child("photo").setValue(imgId).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(getContext(), "There was an error adding your photo. Please try again.", Toast.LENGTH_LONG).show();
             }
         });
-
     }
-
-
 }
 
 

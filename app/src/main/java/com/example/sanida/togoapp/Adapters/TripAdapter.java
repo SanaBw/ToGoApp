@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.sanida.togoapp.Fragments.HomeFragment;
 import com.example.sanida.togoapp.Fragments.NewTripFragment;
 import com.example.sanida.togoapp.Models.Request;
 import com.example.sanida.togoapp.Models.User;
@@ -31,6 +30,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
@@ -45,72 +45,41 @@ import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
 public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
 
-    Context context;
-    LayoutInflater layoutInflater;
-    ArrayList<Trip> trips;
-    String userName, userPhoto;
-    ArrayList<Trip> arraylist;
-    FirebaseUser currentUser;
-    public static User currentUserModel;
+    private Context context;
+    private LayoutInflater layoutInflater;
+    private ArrayList<Trip> trips, filteredTrips;
+    private String userName, userPhoto;
+    private FirebaseUser currentUser;
+    private User currentUserModel;
+    private PopupWindow infoPopup, tripPopup;
+    private Boolean isAlreadyRequested;
 
 
-    // data is passed into the constructor
     public TripAdapter(Context context, ArrayList<Trip> trips) {
-        this.context = context;
         layoutInflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
-        this.trips = trips;
-        arraylist = new ArrayList<>();
-        this.arraylist.addAll(trips);
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        filteredTrips = new ArrayList<>();
+        isAlreadyRequested = false;
+        this.context = context;
+        this.trips = trips;
+        this.filteredTrips.addAll(trips);
     }
 
 
-    // inflates the row layout from xml when needed
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View rootView = layoutInflater.inflate(R.layout.trip, parent, false);
         return new ViewHolder(rootView);
     }
 
-    // binds the data to the TextView in each row
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        Trip trip = trips.get(position);
 
-        holder.trip = trip;
-        holder.tripId = trip.getTripId();
-        holder.user = trip.getUser();
-        holder.tripCost.setText(String.format("%1$,.2f", trip.getCost()) + " BAM");
-        holder.tripStart.setText(trip.getStartLocation());
-        holder.tripEnd.setText(trip.getEndLocation());
-        holder.tripDate.setText(trip.getDate() + " at " + trip.getTime());
-        holder.tripSeats.setText(trip.getSeats() + " seats available");
-        if (trip.getDriving()) {
-            holder.tripDriving.setText(" is driving");
-        } else {
-            holder.tripDriving.setText(" is not driving");
-        }
-
-
-        fetchUserData(trip.getUser(), holder);
-    }
-
-    // total number of rows
-    @Override
-    public int getItemCount() {
-        return trips.size();
-    }
-
-
-    // stores and recycles views as they are scrolled off screen
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         TextView tripStart, tripEnd, tripDate, tripSeats, tripDriving, tripUser, tripCost;
         ImageView userImg;
         User user;
         String tripId;
         Trip trip;
-
 
         ViewHolder(final View itemView) {
             super(itemView);
@@ -126,159 +95,64 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (trip.getUser().getId().equals(currentUserModel.getId())) {
+                        NewTripFragment newTripFragment = new NewTripFragment();
+                        ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragmentFrame, newTripFragment)
+                                .commit();
 
-                        if (trip.getUser().getId().equals(currentUserModel.getId())) {
-                            NewTripFragment newTripFragment = new NewTripFragment();
-                            ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.fragmentFrame, newTripFragment)
-                                    .commit();
-
-                            newTripFragment.editMyTrip(trip);
-
-                        } else {
-                            openTrip(trip);
-                        }
+                        newTripFragment.editMyTrip(trip);
+                    } else {
+                        openTrip(trip);
                     }
-
+                }
             });
 
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                   seeTripInfo(trip);
+                    seeTripInfo(trip);
                     return true;
                 }
-
             });
-
-
-
         }
-
-        @Override
-        public void onClick(View view) {
-        }
-
     }
-    private PopupWindow infoPopup;
-    RidersAdapter ridersAdapter;
-    RecyclerView ridersRecView;
-    private void seeTripInfo(Trip trip) {
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View layout = inflater.inflate(R.layout.trip_info, null);
-        infoPopup = new PopupWindow(layout, ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT);
-
-        TextView carInfoTxt = layout.findViewById(R.id.carInfoTxt);
-        ridersRecView=layout.findViewById(R.id.ridersProfile);
-        String text = "Car info: " + trip.getCarInfo();
-        carInfoTxt.setText(text);
 
 
-        if (trip.getRiders()!=null){
-            HashMap<String, Object> riders = trip.getRiders();
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        Trip trip = trips.get(position);
 
-            ridersAdapter = new RidersAdapter(context, riders);
-            LinearLayoutManager llm = new LinearLayoutManager(context);
-            llm.setOrientation(LinearLayoutManager.VERTICAL);
-            ridersRecView.setLayoutManager(llm);
-            ridersRecView.setAdapter(ridersAdapter);
+        holder.trip = trip;
+        holder.tripId = trip.getTripId();
+        holder.user = trip.getUser();
+        holder.tripCost.setText(String.format("%1$,.2f", trip.getCost()) + " BAM");
+        holder.tripStart.setText(trip.getStartLocation());
+        holder.tripEnd.setText(trip.getEndLocation());
+        holder.tripDate.setText(trip.getDate() + " at " + trip.getTime());
+        holder.tripSeats.setText(trip.getSeats() + " seats available");
+
+        if (trip.getDriving()) {
+            holder.tripDriving.setText(" is driving");
         } else {
-            System.out.println("NO RIDERSS");
+            holder.tripDriving.setText(" is not driving");
         }
 
-
-
-        if (Build.VERSION.SDK_INT >= 21) {
-            infoPopup.setElevation(5.0f);
-        }
-        infoPopup.showAtLocation(layout, Gravity.CENTER, 0, 0);
-
-        ConstraintLayout background = layout.findViewById(R.id.backPopup);
-        background.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                infoPopup.dismiss();
-            }
-        });
-    }
-
-    private PopupWindow tripPopup;
-
-    public void openTrip(final Trip trip) {
-
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View layout = inflater.inflate(R.layout.trip_popup, null);
-        final Button messageUser, reserve;
-
-
-        tripPopup = new PopupWindow(layout, ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT);
-        messageUser = layout.findViewById(R.id.messageUserBtn);
-        reserve = layout.findViewById(R.id.reserveBtn);
-
-        if (HomeFragment.alreadyRequested(currentUserModel, trip)) {
-            reserve.setVisibility(View.GONE);
-        }
-
-        reserve.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                reserveSeat(trip);
-                tripPopup.dismiss();
-                Toast.makeText(context, "Your request is sent!", Toast.LENGTH_LONG).show();
-            }
-        });
-
-
-        if (Build.VERSION.SDK_INT >= 21) {
-            tripPopup.setElevation(5.0f);
-        }
-        tripPopup.showAtLocation(layout, Gravity.CENTER, 0, 0);
-
-        ConstraintLayout background = layout.findViewById(R.id.backPopup);
-        background.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                tripPopup.dismiss();
-            }
-        });
-
-    }
-
-    private void reserveSeat(Trip trip) {
-        User owner = trip.getUser();
-        User rider = currentUserModel;
-        String requestId = UUID.randomUUID().toString();
-        Request request = new Request(requestId, owner, rider, trip);
-        FirebaseDatabase.getInstance().getReference().child("/requests").child(requestId).setValue(request);
-
+        fetchUserData(trip.getUser(), holder);
     }
 
 
-    // convenience method for getting data at click position
-    Trip getItem(int id) {
-        return trips.get(id);
+    @Override
+    public int getItemCount() {
+        return trips.size();
     }
 
-    public void filter(String charText) {
-        charText = charText.toLowerCase(Locale.getDefault());
-        trips.clear();
-        if (charText.length() == 0) {
-            trips.addAll(arraylist);
-        } else {
-            for (Trip tr : arraylist) {
-                if (tr.getStartLocation().toLowerCase(Locale.getDefault()).contains(charText) || tr.getEndLocation().toLowerCase(Locale.getDefault()).contains(charText)) {
-                    trips.add(tr);
-                }
-            }
-        }
-        notifyDataSetChanged();
-    }
 
     private void fetchUserData(User user, TripAdapter.ViewHolder holder) {
-
         final TripAdapter.ViewHolder viewHolder = holder;
+        DatabaseReference usersDatabase = FirebaseDatabase.getInstance().getReference().child("/users");
 
-        FirebaseDatabase.getInstance().getReference().child("/users").child(user.getId()).addValueEventListener((new ValueEventListener() {
+        usersDatabase.child(user.getId()).addValueEventListener((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -297,41 +171,162 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
                                 e.printStackTrace();
                             }
                         }
+
                         if (Objects.equals(postSnapShot.getKey(), "name")) {
                             userName = Objects.requireNonNull(postSnapShot.getValue()).toString();
                             viewHolder.tripUser.setText(userName);
                         }
-
                     }
                 }
-
-
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
             }
-
-
         }));
 
-        FirebaseDatabase.getInstance().getReference().child("/users").child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+        usersDatabase.child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     currentUserModel = dataSnapshot.getValue(User.class);
-
-
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
             }
         });
     }
 
 
+    public void filter(String charText) {
+        charText = charText.toLowerCase(Locale.getDefault());
+        trips.clear();
+
+        if (charText.length() == 0) {
+            trips.addAll(filteredTrips);
+        } else {
+            for (Trip tr : filteredTrips) {
+                if (tr.getStartLocation().toLowerCase(Locale.getDefault()).contains(charText) || tr.getEndLocation().toLowerCase(Locale.getDefault()).contains(charText)) {
+                    trips.add(tr);
+                }
+            }
+        }
+
+        notifyDataSetChanged();
+    }
+
+
+    private void seeTripInfo(Trip trip) {
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.trip_info, null);
+        TextView carInfoTxt = layout.findViewById(R.id.carInfoTxt);
+        RecyclerView ridersRecView = layout.findViewById(R.id.ridersProfile);
+        String text = "Car info: " + trip.getCarInfo();
+        ConstraintLayout background = layout.findViewById(R.id.backPopup);
+
+        infoPopup = new PopupWindow(layout, ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT);
+        carInfoTxt.setText(text);
+
+        if (trip.getRiders() != null) {
+            HashMap<String, Object> riders = trip.getRiders();
+            RidersAdapter ridersAdapter = new RidersAdapter(context, riders);
+            LinearLayoutManager llm = new LinearLayoutManager(context);
+
+            llm.setOrientation(LinearLayoutManager.VERTICAL);
+            ridersRecView.setLayoutManager(llm);
+            ridersRecView.setAdapter(ridersAdapter);
+        }
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            infoPopup.setElevation(5.0f);
+        }
+
+        infoPopup.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+        background.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                infoPopup.dismiss();
+            }
+        });
+    }
+
+
+    private void openTrip(final Trip trip) {
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.trip_popup, null);
+        final Button messageUser, reserve;
+        ConstraintLayout background = layout.findViewById(R.id.backPopup);
+
+
+        tripPopup = new PopupWindow(layout, ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT);
+        messageUser = layout.findViewById(R.id.messageUserBtn);
+        reserve = layout.findViewById(R.id.reserveBtn);
+
+        if (alreadyRequested(currentUserModel, trip)) {
+            reserve.setVisibility(View.GONE);
+        }
+
+        reserve.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reserveSeat(trip);
+                tripPopup.dismiss();
+                Toast.makeText(context, "Your request is sent!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            tripPopup.setElevation(5.0f);
+        }
+
+        tripPopup.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+
+        background.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tripPopup.dismiss();
+            }
+        });
+    }
+
+
+    private boolean alreadyRequested(final User rider, final Trip trip) {
+        FirebaseDatabase.getInstance().getReference().child("/requests").addValueEventListener((new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
+                        Request request = postSnapShot.getValue(Request.class);
+
+                        if (request != null) {
+                            if (request.getRider().getId().equals(rider.getId()) && request.getTrip().getTripId().equals(trip.getTripId())) {
+                                isAlreadyRequested = true;
+                            } else {
+                                isAlreadyRequested = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        }));
+
+        return isAlreadyRequested;
+    }
+
+
+    private void reserveSeat(Trip trip) {
+        User owner = trip.getUser();
+        User rider = currentUserModel;
+        String requestId = UUID.randomUUID().toString();
+        Request request = new Request(requestId, owner, rider, trip);
+        FirebaseDatabase.getInstance().getReference().child("/requests").child(requestId).setValue(request);
+    }
 }

@@ -15,13 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.sanida.togoapp.Models.User;
 import com.example.sanida.togoapp.R;
 import com.example.sanida.togoapp.Models.Trip;
 import com.example.sanida.togoapp.Adapters.TripAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,43 +27,43 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 
 public class MyTripsFragment extends Fragment {
 
-    FloatingActionButton addTripBtn;
-    Context context;
-    FirebaseAuth auth;
-    FragmentTransaction ft;
-    RecyclerView myTripsRecView;
-    ProgressDialog mProgressDialog;
-    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-    TripAdapter adapter;
-    String currentUser;
+    private Context context;
+    private FragmentTransaction ft;
+    private RecyclerView myTripsRecView;
+    private ProgressDialog progressDialog;
+    private DatabaseReference databaseReference;
+    private TripAdapter adapter;
+    private String currentUser;
+    private ArrayList<Trip> trips;
+    private double cost;
+    private TextView costTxt;
 
-    ArrayList<Trip> trips = new ArrayList<>();
-
-    FirebaseUser user;
-    double cost;
-    TextView costTxt;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_my_trips, container, false);
-        auth = FirebaseAuth.getInstance();
-        currentUser=auth.getCurrentUser().getUid();
-        addTripBtn = view.findViewById(R.id.addTripBtn);
-        cost=0;
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FloatingActionButton addTripBtn = view.findViewById(R.id.addTripBtn);
+        LinearLayoutManager llm = new LinearLayoutManager(context);
+
+        currentUser = auth.getCurrentUser().getUid();
+        trips = new ArrayList<>();
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        cost = 0;
         costTxt = view.findViewById(R.id.costTxt);
+        myTripsRecView = view.findViewById(R.id.tripsView);
+        context = getContext();
+        adapter = new TripAdapter(context, trips);
+
         costTxt.setText("TOTAL COST:     " + cost + " BAM");
+        myTripsRecView.setLayoutManager(llm);
+        myTripsRecView.setAdapter(adapter);
+
+        getDataFromServer();
 
         addTripBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,110 +74,81 @@ public class MyTripsFragment extends Fragment {
             }
         });
 
-        myTripsRecView = view.findViewById(R.id.tripsView);
-        context = getContext();
-
-        adapter = new TripAdapter(context, trips);
-        LinearLayoutManager llm = new LinearLayoutManager(context);
-        myTripsRecView.setLayoutManager(llm);
-        myTripsRecView.setAdapter( adapter );
-
-        getDataFromServer();
-
         return view;
     }
 
-    public void getDataFromServer() {
+    private void getDataFromServer() {
         showProgressDialog();
-            databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
+        databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren())
-                    {
+                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
                         Trip trip = postSnapShot.getValue(Trip.class);
-                        if (postSnapShot.child("user").child("id").getValue().equals(currentUser)){
-                        trips.add(trip);
+                        if (postSnapShot.child("user").child("id").getValue().equals(currentUser)) {
+                            trips.add(trip);
                         }
 
-                        if (trip.getRiders()!=null){
-                            if (trip.getRiders().containsValue(currentUser)){
+                        if (trip.getRiders() != null) {
+                            if (trip.getRiders().containsValue(currentUser)) {
                                 trips.add(trip);
-                                cost +=trip.getCost();
+                                cost += trip.getCost();
                                 costTxt.setText("TOTAL COST:     " + cost + " BAM");
-
                             }
                         }
-
-
                     }
                 }
-                hideProgressDialog();
                 adapter = new TripAdapter(context, trips);
                 myTripsRecView.setAdapter(adapter);
-
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 hideProgressDialog();
             }
-
-
         }));
 
-        showProgressDialog();
         databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 int repetition = 0;
                 if (dataSnapshot.exists()) {
-                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren())
-                    {
-                        int seat = Integer.parseInt(postSnapShot.child("maxSeats").getValue().toString())-repetition;
+                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
+                        int seat = Integer.parseInt(postSnapShot.child("maxSeats").getValue().toString()) - repetition;
                         repetition++;
-                        if (postSnapShot.child("seat"+seat).getValue()!=null){
-                            if (postSnapShot.child("seat"+seat).getValue().equals(user.getUid())){
+
+                        if (postSnapShot.child("seat" + seat).getValue() != null) {
+                            if (postSnapShot.child("seat" + seat).getValue().equals(currentUser)) {
                                 Trip trip = postSnapShot.getValue(Trip.class);
                                 trips.add(trip);
                             }
                         }
-
-
-
                     }
                 }
-                hideProgressDialog();
                 adapter = new TripAdapter(context, trips);
                 myTripsRecView.setAdapter(adapter);
-
+                hideProgressDialog();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 hideProgressDialog();
             }
-
-
         }));
     }
 
     private void showProgressDialog() {
-        if (mProgressDialog == null) {
-            mProgressDialog = new ProgressDialog(getContext());
-            mProgressDialog.setMessage("Loading...");
-            mProgressDialog.setIndeterminate(true);
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialog(getContext());
+            progressDialog.setMessage("Loading...");
+            progressDialog.setIndeterminate(true);
         }
-
-        mProgressDialog.show();
+        progressDialog.show();
     }
 
     private void hideProgressDialog() {
-        if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mProgressDialog.dismiss();
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
         }
     }
-
-
-
 }
