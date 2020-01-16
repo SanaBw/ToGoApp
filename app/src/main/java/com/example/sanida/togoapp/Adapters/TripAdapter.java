@@ -22,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.sanida.togoapp.Fragments.NewTripFragment;
+import com.example.sanida.togoapp.Fragments.RiderProfileFragment;
 import com.example.sanida.togoapp.Models.Request;
 import com.example.sanida.togoapp.Models.User;
 import com.example.sanida.togoapp.R;
@@ -48,10 +49,9 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
     private Context context;
     private LayoutInflater layoutInflater;
     private ArrayList<Trip> trips, filteredTrips;
-    private String userName, userPhoto;
     private FirebaseUser currentUser;
     private User currentUserModel;
-    private PopupWindow infoPopup, tripPopup;
+    public static PopupWindow infoPopup, tripPopup;
     private Boolean isAlreadyRequested;
 
 
@@ -70,6 +70,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View rootView = layoutInflater.inflate(R.layout.trip, parent, false);
+
         return new ViewHolder(rootView);
     }
 
@@ -138,7 +139,8 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
             holder.tripDriving.setText(" is not driving");
         }
 
-        fetchUserData(trip.getUser(), holder);
+        fetchUserData(context, trip.getUser().getId(), holder.tripUser,  holder.userImg);
+        getCurrentUser();
     }
 
 
@@ -148,17 +150,17 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
     }
 
 
-    private void fetchUserData(User user, TripAdapter.ViewHolder holder) {
-        final TripAdapter.ViewHolder viewHolder = holder;
+
+    public static void fetchUserData(final Context context, String userId, final TextView textView, final ImageView imageView) {
         DatabaseReference usersDatabase = FirebaseDatabase.getInstance().getReference().child("/users");
 
-        usersDatabase.child(user.getId()).addValueEventListener((new ValueEventListener() {
+        usersDatabase.child(userId).addValueEventListener((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
                         if (Objects.equals(postSnapShot.getKey(), "photo")) {
-                            userPhoto = Objects.requireNonNull(postSnapShot.getValue()).toString();
+                            String userPhoto = Objects.requireNonNull(postSnapShot.getValue()).toString();
                             try {
                                 Glide.with(context)
                                         .load(FirebaseStorage.getInstance().getReference().
@@ -166,15 +168,14 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
                                                 child(userPhoto))
                                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                                         .apply(RequestOptions.circleCropTransform())
-                                        .into(viewHolder.userImg);
+                                        .into(imageView);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         }
 
                         if (Objects.equals(postSnapShot.getKey(), "name")) {
-                            userName = Objects.requireNonNull(postSnapShot.getValue()).toString();
-                            viewHolder.tripUser.setText(userName);
+                            textView.setText(Objects.requireNonNull(postSnapShot.getValue()).toString());
                         }
                     }
                 }
@@ -184,7 +185,11 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         }));
+    }
 
+
+    public void getCurrentUser(){
+        DatabaseReference usersDatabase = FirebaseDatabase.getInstance().getReference().child("/users");
         usersDatabase.child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -257,13 +262,15 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
     private void openTrip(final Trip trip) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.trip_popup, null);
-        final Button messageUser, reserve;
+        final Button messageUser, reserve, profile;
         ConstraintLayout background = layout.findViewById(R.id.backPopup);
 
 
         tripPopup = new PopupWindow(layout, ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT);
         messageUser = layout.findViewById(R.id.messageUserBtn);
         reserve = layout.findViewById(R.id.reserveBtn);
+        profile = layout.findViewById(R.id.profileBtn);
+        profile.setText(trip.getUser().getName() + "'s profile");
 
         if (alreadyRequested(currentUserModel, trip)) {
             reserve.setVisibility(View.GONE);
@@ -272,9 +279,22 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
         reserve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                reserveSeat(trip);
+                requestSeat(trip);
                 tripPopup.dismiss();
                 Toast.makeText(context, "Your request is sent!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RiderProfileFragment riderProfileFragment = new RiderProfileFragment(trip.getUser().getId());
+                ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentFrame, riderProfileFragment)
+                        .commit();
+
+                tripPopup.dismiss();
+
             }
         });
 
@@ -322,7 +342,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
     }
 
 
-    private void reserveSeat(Trip trip) {
+    private void requestSeat(Trip trip) {
         User owner = trip.getUser();
         User rider = currentUserModel;
         String requestId = UUID.randomUUID().toString();

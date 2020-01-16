@@ -8,11 +8,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.sanida.togoapp.Fragments.RiderProfileFragment;
 import com.example.sanida.togoapp.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -31,20 +34,13 @@ class RidersAdapter extends RecyclerView.Adapter<RidersAdapter.ViewHolder> {
     private Context context;
     private LayoutInflater layoutInflater;
     private ArrayList<Object> ridersArray;
+    private String riderId;
 
 
     public RidersAdapter(Context context, HashMap<String, Object> riders) {
         layoutInflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
         ridersArray = new ArrayList<>(riders.values());
         this.context = context;
-    }
-
-
-    @Override
-    public void onBindViewHolder(@NonNull RidersAdapter.ViewHolder holder, int position) {
-        String id = ridersArray.get(position).toString();
-
-        fetchUserData(id, holder);
     }
 
 
@@ -56,12 +52,6 @@ class RidersAdapter extends RecyclerView.Adapter<RidersAdapter.ViewHolder> {
     }
 
 
-    @Override
-    public int getItemCount() {
-        return ridersArray.size();
-    }
-
-
     public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView riderPhoto;
         TextView riderName;
@@ -70,45 +60,32 @@ class RidersAdapter extends RecyclerView.Adapter<RidersAdapter.ViewHolder> {
             super(itemView);
             riderName = itemView.findViewById(R.id.riderName);
             riderPhoto = itemView.findViewById(R.id.riderPhoto);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    RiderProfileFragment riderProfileFragment = new RiderProfileFragment(riderId);
+                    ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragmentFrame, riderProfileFragment)
+                            .commit();
+
+                    TripAdapter.infoPopup.dismiss();
+                }
+            });
         }
     }
 
 
-    private void fetchUserData(String id, RidersAdapter.ViewHolder holder) {
-        final RidersAdapter.ViewHolder viewHolder = holder;
+    @Override
+    public void onBindViewHolder(@NonNull RidersAdapter.ViewHolder holder, int position) {
+        riderId = ridersArray.get(position).toString();
 
-        FirebaseDatabase.getInstance().getReference().child("/users").child(id).addValueEventListener((new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
+        TripAdapter.fetchUserData(context, riderId, holder.riderName, holder.riderPhoto);
+    }
 
-                        if (Objects.equals(postSnapShot.getKey(), "photo")) {
-                            String userPhoto = Objects.requireNonNull(postSnapShot.getValue()).toString();
-                            try {
-                                Glide.with(context)
-                                        .load(FirebaseStorage.getInstance().getReference().
-                                                child("/images").
-                                                child(userPhoto))
-                                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                        .apply(RequestOptions.circleCropTransform())
-                                        .into(viewHolder.riderPhoto);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
 
-                        if (Objects.equals(postSnapShot.getKey(), "name")) {
-                            String userName = Objects.requireNonNull(postSnapShot.getValue()).toString();
-                            viewHolder.riderName.setText(userName);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        }));
+    @Override
+    public int getItemCount() {
+        return ridersArray.size();
     }
 }

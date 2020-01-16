@@ -76,7 +76,7 @@ public class ProfileFragment extends Fragment {
 
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
-        fetchUserData();
+        getProfileData();
 
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,7 +103,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 updateUserData(nameTxt.getText().toString(), passwordTxt.getText().toString());
-                fetchUserData();
+                getProfileData();
                 nameTxt.setEnabled(false);
                 passwordTxt.setEnabled(false);
             }
@@ -153,7 +153,7 @@ public class ProfileFragment extends Fragment {
     }
 
 
-    private void fetchUserData() {
+    private void getProfileData() {
         dbRef.child(userPath).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -169,11 +169,11 @@ public class ProfileFragment extends Fragment {
                             .into(profileImg);
                 }
 
+                email = user.getEmail();
+
                 if (!email.equals(dbRef.child(userPath).child("email"))) {
                     dbRef.child(userPath).child("email").setValue(email);
                 }
-
-                email = user.getEmail();
             }
 
             @Override

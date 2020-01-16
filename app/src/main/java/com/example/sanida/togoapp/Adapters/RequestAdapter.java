@@ -38,7 +38,6 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ViewHold
     private Context context;
     private LayoutInflater layoutInflater;
     private ArrayList<Request> requests;
-    private String userPhoto, userName;
 
 
     public RequestAdapter(Context context, ArrayList<Request> requests) {
@@ -101,52 +100,13 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.ViewHold
         String txt = "From " + request.getTrip().getStartLocation() + " To " + request.getTrip().getEndLocation();
         holder.txtView.setText(txt);
 
-        fetchUserData(request.getRider(), holder);
+        TripAdapter.fetchUserData(context, request.getRider().getId(), holder.userName, holder.userImg);
     }
 
 
     @Override
     public int getItemCount() {
         return requests.size();
-    }
-
-
-    private void fetchUserData(User user, final RequestAdapter.ViewHolder holder) {
-        final RequestAdapter.ViewHolder viewHolder = holder;
-
-        FirebaseDatabase.getInstance().getReference().child("/users").child(user.getId()).addValueEventListener((new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
-
-                        if (Objects.equals(postSnapShot.getKey(), "photo")) {
-                            userPhoto = Objects.requireNonNull(postSnapShot.getValue()).toString();
-                            try {
-                                Glide.with(context)
-                                        .load(FirebaseStorage.getInstance().getReference().
-                                                child("/images").
-                                                child(userPhoto))
-                                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                        .apply(RequestOptions.circleCropTransform())
-                                        .into(viewHolder.userImg);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                        if (Objects.equals(postSnapShot.getKey(), "name")) {
-                            userName = Objects.requireNonNull(postSnapShot.getValue()).toString();
-                            viewHolder.userName.setText(userName);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        }));
     }
 
 

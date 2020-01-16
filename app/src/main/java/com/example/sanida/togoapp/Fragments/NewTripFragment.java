@@ -41,6 +41,7 @@ public class NewTripFragment extends Fragment {
     private DatabaseReference dbRef;
     private Trip editableTrip;
     private Boolean editing;
+    private FragmentTransaction ft;
     private SimpleDateFormat format;
 
 
@@ -49,7 +50,7 @@ public class NewTripFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_new_trip, container, false);
         TextView title = v.findViewById(R.id.title);
         Button saveBtn = v.findViewById(R.id.saveBtn);
-
+        Button deleteBtn = v.findViewById(R.id.deleteBtn);
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
         tripNameTxt = v.findViewById(R.id.tripNameTxt);
@@ -64,6 +65,7 @@ public class NewTripFragment extends Fragment {
         editing = false;
         dbRef = FirebaseDatabase.getInstance().getReference().child("/trips");
         format = new SimpleDateFormat("dd-MM-yyyy");
+        ft = getActivity().getSupportFragmentManager().beginTransaction();
 
         if (editableTrip != null) {
             editing = true;
@@ -81,6 +83,7 @@ public class NewTripFragment extends Fragment {
                 drivingBox.setChecked(true);
             }
             costTxt.setText(String.format("%1$,.2f", editableTrip.getCost()));
+            deleteBtn.setVisibility(View.VISIBLE);
         }
 
         FirebaseDatabase.getInstance().getReference().child("/users").child(auth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -105,7 +108,21 @@ public class NewTripFragment extends Fragment {
 
         });
 
+        deleteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteTrip();
+            }
+        });
+
         return v;
+    }
+
+    private void deleteTrip() {
+        FirebaseDatabase.getInstance().getReference().child("/trips").child(editableTrip.getTripId()).removeValue();
+        Toast.makeText(getContext(), "Trip deleted!", Toast.LENGTH_LONG).show();
+        ft.replace(R.id.fragmentFrame, new HomeFragment());
+        ft.commit();
     }
 
 
@@ -122,7 +139,6 @@ public class NewTripFragment extends Fragment {
         String time = timeTxt.getText().toString();
         String carInfo = carInfoTxt.getText().toString();
         Boolean driving = drivingBox.isChecked();
-        FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
 
         if (!editing) {
             tripId = UUID.randomUUID().toString();

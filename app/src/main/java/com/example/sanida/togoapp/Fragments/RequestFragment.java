@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.sanida.togoapp.Adapters.RequestAdapter;
@@ -32,7 +33,6 @@ import java.util.ArrayList;
 public class RequestFragment extends Fragment {
 
     private Context context;
-    private ProgressDialog progressDialog;
     private DatabaseReference databaseReference;
     private RecyclerView allRequests;
     private RequestAdapter reqAdapter;
@@ -58,14 +58,15 @@ public class RequestFragment extends Fragment {
         allRequests.setLayoutManager(llm);
         allRequests.setAdapter(reqAdapter);
 
-        getDataFromServer();
+        getAllRequests();
 
         return view;
     }
 
 
-    public void getDataFromServer() {
-        showProgressDialog();
+    private void getAllRequests() {
+        final ProgressDialog progressDialog = HomeFragment.showProgressDialog(context);
+
         databaseReference.child("/requests").addValueEventListener((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -94,30 +95,13 @@ public class RequestFragment extends Fragment {
                 if (requests.size() > 0) {
                     noReqTxt.setVisibility(View.GONE);
                 }
-                hideProgressDialog();
+                HomeFragment.hideProgressDialog(progressDialog);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                hideProgressDialog();
+                HomeFragment.hideProgressDialog(progressDialog);
             }
         }));
-    }
-
-
-    private void showProgressDialog() {
-        if (progressDialog == null) {
-            progressDialog = new ProgressDialog(getContext());
-            progressDialog.setMessage("Loading...");
-            progressDialog.setIndeterminate(true);
-        }
-        progressDialog.show();
-    }
-
-
-    private void hideProgressDialog() {
-        if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
-        }
     }
 }

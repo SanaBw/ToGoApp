@@ -34,13 +34,23 @@ public class MyTripsFragment extends Fragment {
     private Context context;
     private FragmentTransaction ft;
     private RecyclerView myTripsRecView;
-    private ProgressDialog progressDialog;
     private DatabaseReference databaseReference;
     private TripAdapter adapter;
     private String currentUser;
     private ArrayList<Trip> trips;
     private double cost;
     private TextView costTxt;
+    private TextView noReqTxt;
+
+
+    public MyTripsFragment(String currentUser){
+        this.currentUser=currentUser;
+    }
+
+
+    public MyTripsFragment(){
+        this.currentUser=null;
+    }
 
 
     @Override
@@ -50,7 +60,12 @@ public class MyTripsFragment extends Fragment {
         FloatingActionButton addTripBtn = view.findViewById(R.id.addTripBtn);
         LinearLayoutManager llm = new LinearLayoutManager(context);
 
-        currentUser = auth.getCurrentUser().getUid();
+        if (currentUser==null){
+            currentUser = auth.getCurrentUser().getUid();
+        } else {
+            addTripBtn.hide();
+        }
+
         trips = new ArrayList<>();
         databaseReference = FirebaseDatabase.getInstance().getReference();
         cost = 0;
@@ -58,12 +73,13 @@ public class MyTripsFragment extends Fragment {
         myTripsRecView = view.findViewById(R.id.tripsView);
         context = getContext();
         adapter = new TripAdapter(context, trips);
+        noReqTxt = view.findViewById(R.id.noreq2);
 
         costTxt.setText("TOTAL COST:     " + cost + " BAM");
         myTripsRecView.setLayoutManager(llm);
         myTripsRecView.setAdapter(adapter);
 
-        getDataFromServer();
+        getAllMyTrips();
 
         addTripBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,8 +93,10 @@ public class MyTripsFragment extends Fragment {
         return view;
     }
 
-    private void getDataFromServer() {
-        showProgressDialog();
+
+    private void getAllMyTrips() {
+        final ProgressDialog progressDialog = HomeFragment.showProgressDialog(context);
+
         databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -100,11 +118,15 @@ public class MyTripsFragment extends Fragment {
                 }
                 adapter = new TripAdapter(context, trips);
                 myTripsRecView.setAdapter(adapter);
+
+                if (trips.size() > 0) {
+                    noReqTxt.setVisibility(View.GONE);
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                hideProgressDialog();
+                HomeFragment.hideProgressDialog(progressDialog);
             }
         }));
 
@@ -127,28 +149,13 @@ public class MyTripsFragment extends Fragment {
                 }
                 adapter = new TripAdapter(context, trips);
                 myTripsRecView.setAdapter(adapter);
-                hideProgressDialog();
+                HomeFragment.hideProgressDialog(progressDialog);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                hideProgressDialog();
+                HomeFragment.hideProgressDialog(progressDialog);
             }
         }));
-    }
-
-    private void showProgressDialog() {
-        if (progressDialog == null) {
-            progressDialog = new ProgressDialog(getContext());
-            progressDialog.setMessage("Loading...");
-            progressDialog.setIndeterminate(true);
-        }
-        progressDialog.show();
-    }
-
-    private void hideProgressDialog() {
-        if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
-        }
     }
 }
