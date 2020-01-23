@@ -5,6 +5,7 @@ import com.google.firebase.firestore.Exclude;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class User {
 
     private String name, photo, id, email;

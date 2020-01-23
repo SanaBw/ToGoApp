@@ -40,6 +40,16 @@ public class HomeFragment extends Fragment {
     private DatabaseReference databaseReference;
     private TripAdapter tripAdapter;
     private ArrayList<Trip> trips;
+    private String currentUser;
+
+    public HomeFragment(String currentUser) {
+        this.currentUser = currentUser;
+    }
+
+
+    public HomeFragment() {
+        this.currentUser = null;
+    }
 
 
     @Override
@@ -49,19 +59,15 @@ public class HomeFragment extends Fragment {
         FloatingActionButton addTripBtn = view.findViewById(R.id.addTripBtn);
         LinearLayoutManager llm = new LinearLayoutManager(context);
         tripsRecView = view.findViewById(R.id.tripsView);
-        FragmentManager fm = getFragmentManager();
-        int count = fm.getBackStackEntryCount();
+        context = getContext();
+        trips = new ArrayList<>();
+        tripAdapter = new TripAdapter(Objects.requireNonNull(context), trips);
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+
 
         tripsRecView.setLayoutManager(llm);
         tripsRecView.setAdapter(tripAdapter);
-        trips = new ArrayList<>();
-        databaseReference = FirebaseDatabase.getInstance().getReference();
-        context = getContext();
-        tripAdapter = new TripAdapter(Objects.requireNonNull(context), trips);
 
-        for (int i = 0; i < count; ++i) {
-            fm.popBackStack();
-        }
         llm.setOrientation(LinearLayoutManager.VERTICAL);
 
         getAllTrips();
@@ -104,7 +110,13 @@ public class HomeFragment extends Fragment {
                         Trip trip = postSnapShot.getValue(Trip.class);
 
                         if (trip.getSeats() > 0) {
-                            trips.add(trip);
+                            if (currentUser!=null){
+                                if (trip.getUser().getId().equals(currentUser)){
+                                    trips.add(trip);
+                                }
+                            } else {
+                                trips.add(trip);
+                            }
                         }
                     }
                 }

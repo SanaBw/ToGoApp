@@ -210,6 +210,7 @@ public class LogReg extends AppCompatActivity {
         Map<String, Object> newUser = new HashMap<>();
         newUser.put("name", name);
         newUser.put("email", email);
+        newUser.put("id",id);
 
         dbRef.child(currentUser.getUid()).setValue(newUser).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -242,9 +243,6 @@ public class LogReg extends AppCompatActivity {
     }
 
 
-    @Override
-    public void onBackPressed() {
-    }
 }
 
 

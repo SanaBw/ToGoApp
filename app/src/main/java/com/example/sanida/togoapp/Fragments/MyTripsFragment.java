@@ -1,12 +1,19 @@
 package com.example.sanida.togoapp.Fragments;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,10 +22,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.sanida.togoapp.Models.SwipeCallback;
 import com.example.sanida.togoapp.R;
 import com.example.sanida.togoapp.Models.Trip;
 import com.example.sanida.togoapp.Adapters.TripAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,6 +36,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MyTripsFragment extends Fragment {
@@ -41,16 +52,10 @@ public class MyTripsFragment extends Fragment {
     private double cost;
     private TextView costTxt;
     private TextView noReqTxt;
-
-
-    public MyTripsFragment(String currentUser){
-        this.currentUser=currentUser;
-    }
-
-
-    public MyTripsFragment(){
-        this.currentUser=null;
-    }
+    private CoordinatorLayout coordinatorLayout;
+    private String riderPosition;
+    int position;
+    private Drawable drawable;
 
 
     @Override
@@ -59,12 +64,15 @@ public class MyTripsFragment extends Fragment {
         FirebaseAuth auth = FirebaseAuth.getInstance();
         FloatingActionButton addTripBtn = view.findViewById(R.id.addTripBtn);
         LinearLayoutManager llm = new LinearLayoutManager(context);
+        coordinatorLayout = view.findViewById(R.id.coordinatorLayout);
 
-        if (currentUser==null){
+
+        if (currentUser == null) {
             currentUser = auth.getCurrentUser().getUid();
         } else {
             addTripBtn.hide();
         }
+
 
         trips = new ArrayList<>();
         databaseReference = FirebaseDatabase.getInstance().getReference();
@@ -79,7 +87,9 @@ public class MyTripsFragment extends Fragment {
         myTripsRecView.setLayoutManager(llm);
         myTripsRecView.setAdapter(adapter);
 
+
         getAllMyTrips();
+        enableSwipeToDelete();
 
         addTripBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,6 +99,7 @@ public class MyTripsFragment extends Fragment {
                 ft.commit();
             }
         });
+
 
         return view;
     }
@@ -158,4 +169,117 @@ public class MyTripsFragment extends Fragment {
             }
         }));
     }
+
+
+
+    private void enableSwipeToDelete() {
+
+        SwipeCallback swipeCallback = new SwipeCallback(adapter, context) {
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                    if (direction == ItemTouchHelper.RIGHT) {
+
+                        drawable = ContextCompat.getDrawable(context, R.drawable.delete);
+                        position = viewHolder.getAdapterPosition();
+
+                        if (trips.get(position).getUser().getId().equals(currentUser)) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            builder.setMessage("Are you sure you want to cancel your trip?");
+                            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    cancelMyTrip(trips.get(position));
+                                    trips.remove(position);
+                                    adapter.notifyDataSetChanged();
+
+                                    Snackbar snackbar = Snackbar.make(coordinatorLayout, "Your trip is canceled.", Snackbar.LENGTH_LONG);
+                                    snackbar.setActionTextColor(Color.YELLOW);
+                                    snackbar.show();
+                                    return;
+                                }
+                            }).setNegativeButton("BACK", new DialogInterface.OnClickListener() {  //not removing items if cancel is done
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    adapter.notifyItemRemoved(position + 1);
+                                    adapter.notifyItemRangeChanged(position, adapter.getItemCount());
+                                    return;
+                                }
+                            }).show();
+
+                        } else {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            builder.setMessage("Are you sure you want to cancel your reservation?");
+                            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    cancelReservation(trips.get(position));
+                                    trips.remove(position);
+                                    adapter.notifyDataSetChanged();
+
+                                    Snackbar snackbar = Snackbar.make(coordinatorLayout, "Your reservation is canceled.", Snackbar.LENGTH_LONG);
+                                    snackbar.setActionTextColor(Color.YELLOW);
+                                    snackbar.show();
+                                    return;
+                                }
+                            }).setNegativeButton("BACK", new DialogInterface.OnClickListener() {  //not removing items if cancel is done
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    adapter.notifyItemRemoved(position + 1);
+                                    adapter.notifyItemRangeChanged(position, adapter.getItemCount());
+                                    return;
+                                }
+                            }).show();
+
+                        }
+
+                    } else if (direction == ItemTouchHelper.LEFT) {
+                        drawable = ContextCompat.getDrawable(context, R.drawable.info);
+                        TripAdapter.seeTripInfo(trips.get(position),context);
+
+
+                    }
+                }
+        };
+
+
+        ItemTouchHelper itemTouchHelper = new
+                ItemTouchHelper(swipeCallback);
+        itemTouchHelper.attachToRecyclerView(myTripsRecView);
+
+    }
+
+
+    private void cancelMyTrip(Trip trip) {
+        databaseReference.child("/trips").child(trip.getTripId()).removeValue();
+    }
+
+
+    private void cancelReservation(Trip trip) {
+        int seats = trip.getSeats();
+
+        HashMap<String, Object> riders = trip.getRiders();
+        for (Map.Entry<String, Object> rider : riders.entrySet()) {
+            if (rider.getValue().equals(currentUser)) {
+                riderPosition = rider.getKey();
+            }
+        }
+        databaseReference.child("/trips").child(trip.getTripId()).child("riders").child(riderPosition).removeValue();
+        databaseReference.child("/trips").child(trip.getTripId()).child("seats").setValue(seats + 1);
+
+
+        HashMap<String, Object> ridersNew = trip.getRiders();
+        HashMap<String, Object> ridersUpdated = trip.getRiders();
+
+        for (Map.Entry<String, Object> riderNew : ridersNew.entrySet()) {
+            ridersUpdated.put("seat" + seats, riderNew.getValue());
+            seats--;
+        }
+
+        adapter.notifyDataSetChanged();
+    }
+
+
+
+
 }
+

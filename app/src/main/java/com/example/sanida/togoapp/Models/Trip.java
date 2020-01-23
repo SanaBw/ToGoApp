@@ -20,7 +20,9 @@ public class Trip {
     }
 
 
-    public Trip(String tripId, String tripName, String startLocation, String endLocation, String date, String time, String carInfo, int seats, Boolean driving, User user, Double cost) {
+    public Trip(String tripId, String tripName, String startLocation, String endLocation,
+                String date, String time, String carInfo, int seats, Boolean driving, User user,
+                Double cost) {
         this.tripId = tripId;
         this.tripName = tripName;
         this.startLocation = startLocation;

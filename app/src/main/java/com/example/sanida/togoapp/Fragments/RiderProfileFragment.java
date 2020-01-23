@@ -17,6 +17,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.sanida.togoapp.Adapters.TripAdapter;
+import com.example.sanida.togoapp.Models.User;
 import com.example.sanida.togoapp.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -43,10 +45,11 @@ public class RiderProfileFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_rider_profile, container, false);
 
         FirebaseStorage storage = FirebaseStorage.getInstance();
+        final User rider = TripAdapter.getUserModel(riderId);
 
         photoImg = view.findViewById(R.id.profileImg);
         nameTxt = view.findViewById(R.id.nameTxt);
@@ -60,11 +63,21 @@ public class RiderProfileFragment extends Fragment {
         allTripsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyTripsFragment myTripsFragment = new MyTripsFragment(riderId);
+                HomeFragment homeFragment = new HomeFragment(riderId);
                 ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragmentFrame, myTripsFragment)
+                        .replace(R.id.fragmentFrame, homeFragment)
                         .commit();
 
+            }
+        });
+
+        sendMessageBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MessageFragment messageFragment = new MessageFragment(getContext(), rider);
+                ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentFrame, messageFragment)
+                        .commit();
             }
         });
 

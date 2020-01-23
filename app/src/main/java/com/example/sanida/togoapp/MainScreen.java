@@ -8,12 +8,14 @@ import androidx.fragment.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import com.example.sanida.togoapp.Fragments.ChatFragment;
+import com.example.sanida.togoapp.Fragments.AllMessagesFragment;
 import com.example.sanida.togoapp.Fragments.HomeFragment;
+import com.example.sanida.togoapp.Fragments.MessageFragment;
 import com.example.sanida.togoapp.Fragments.MyTripsFragment;
 import com.example.sanida.togoapp.Fragments.NewTripFragment;
 import com.example.sanida.togoapp.Fragments.ProfileFragment;
 import com.example.sanida.togoapp.Fragments.RequestFragment;
+import com.example.sanida.togoapp.Fragments.RiderProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainScreen extends AppCompatActivity {
@@ -55,7 +57,7 @@ public class MainScreen extends AppCompatActivity {
                     }
                     case (R.id.chat): {
                         ft.setCustomAnimations(R.anim.slide_left_in, R.anim.slide_right_out);
-                        ft.replace(R.id.fragmentFrame, new ChatFragment());
+                        ft.replace(R.id.fragmentFrame, new AllMessagesFragment());
                         break;
                     }
                     case (R.id.requests): {
@@ -73,12 +75,4 @@ public class MainScreen extends AppCompatActivity {
         });
     }
 
-
-    @Override
-    public void onBackPressed() {
-        Fragment f = this.getSupportFragmentManager().findFragmentById(R.id.fragmentFrame);
-        if (f instanceof NewTripFragment) {
-            super.onBackPressed();
-        }
-    }
 }

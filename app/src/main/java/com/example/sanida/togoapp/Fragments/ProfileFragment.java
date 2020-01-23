@@ -145,7 +145,7 @@ public class ProfileFragment extends Fragment {
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(getContext(), "Something went wrong. Try again with a different or longer password!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "Something went wrong. Try logging off and on again, please.", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
             });
