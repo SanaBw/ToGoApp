@@ -53,9 +53,10 @@ public class MessageFragment extends Fragment {
     private long msgNumber;
     private LinearLayoutManager manager;
 
-    public MessageFragment(Context context, User participant) {
+    public MessageFragment(Context context, User participant, User currentUser) {
         this.context = context;
         this.participant = participant;
+        this.currentUser=currentUser;
     }
 
     @Override
@@ -71,7 +72,6 @@ public class MessageFragment extends Fragment {
         messagesView = view.findViewById(R.id.messagesView);
         messagesView.setAdapter(messagesAdapter);
         messagesView.setLayoutManager(manager);
-        currentUser = TripAdapter.currentUserModel;
         sendBtn = view.findViewById(R.id.sendBtn);
         msgToSend = view.findViewById(R.id.msgToSend);
         particName = view.findViewById(R.id.particName);
@@ -91,7 +91,7 @@ public class MessageFragment extends Fragment {
         particImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RiderProfileFragment riderProfileFragment = new RiderProfileFragment(participant.getId());
+                RiderProfileFragment riderProfileFragment = new RiderProfileFragment(participant.getId(), currentUser);
                 ((FragmentActivity) view.getContext()).getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragmentFrame, riderProfileFragment)
                         .commit();
@@ -123,36 +123,35 @@ public class MessageFragment extends Fragment {
         Message messageToSend = new Message(msgNumber + 1, currentUser, participant, formattedDate, formattedTime, message);
         try {
             databaseReference.child("/messages").child(String.valueOf(msgNumber + 1)).setValue(messageToSend);
+            messages.clear();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            messages.clear();
             getMyMessages();
         }
     }
 
     private void getMyMessages() {
-
-        databaseReference.child("/messages").addListenerForSingleValueEvent((new ValueEventListener() {
+System.out.println(currentUser.getName());
+        databaseReference.child("/messages").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
+                            Message message = postSnapShot.getValue(Message.class);
 
-                        Message message = postSnapShot.getValue(Message.class);
+                            if ((message.getReceiver().getId().equals(currentUser.getId()) &&  message.getSender().getId().equals(participant.getId())) ||
+                                    message.getReceiver().getId().equals(participant.getId()) && message.getSender().getId().equals(currentUser.getId())) {
+                                    messages.add(message);
+                                    System.out.println(message.getContent());
+                            }
+                            msgNumber = dataSnapshot.getChildrenCount();
 
-                        if ((message.getReceiver().getId().equals(currentUser.getId()) && message.getSender().getId().equals(participant.getId())) ||
-                                message.getReceiver().getId().equals(participant.getId()) && message.getSender().getId().equals(currentUser.getId())) {
-                            System.out.println(message);
-                            messages.add(message);
 
-                        }
-                        msgNumber = dataSnapshot.getChildrenCount();
                     }
 
                 }
                 messagesAdapter = new MessagesAdapter(context, messages);
-                messagesAdapter.notifyDataSetChanged();
                 messagesView.setAdapter(messagesAdapter);
                 if (messages.size()>0){
                     messagesView.smoothScrollToPosition(messages.size() - 1);
@@ -162,7 +161,7 @@ public class MessageFragment extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
-        }));
+        });
     }
 
 }

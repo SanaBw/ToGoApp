@@ -65,17 +65,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             dateTxt = itemView.findViewById(R.id.dateTxt);
             drawable = new GradientDrawable();
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    openChat();
-                }
-            });
         }
     }
 
-    private void openChat() {
-    }
 
 
     @Override

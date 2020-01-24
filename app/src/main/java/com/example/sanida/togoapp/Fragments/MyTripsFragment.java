@@ -108,7 +108,7 @@ public class MyTripsFragment extends Fragment {
     private void getAllMyTrips() {
         final ProgressDialog progressDialog = HomeFragment.showProgressDialog(context);
 
-        databaseReference.child("/trips").addValueEventListener((new ValueEventListener() {
+        databaseReference.child("/trips").addListenerForSingleValueEvent((new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {

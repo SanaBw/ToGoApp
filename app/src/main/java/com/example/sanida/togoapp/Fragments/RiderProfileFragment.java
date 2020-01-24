@@ -37,10 +37,12 @@ public class RiderProfileFragment extends Fragment {
     private Button sendMessageBtn, allTripsBtn;
     private DatabaseReference dbRef;
     private StorageReference storageReference;
+    private User currentUser;
 
 
-    public RiderProfileFragment(String riderId) {
+    public RiderProfileFragment(String riderId, User currrentUser) {
         this.riderId = riderId;
+        this.currentUser=currrentUser;
     }
 
 
@@ -74,7 +76,7 @@ public class RiderProfileFragment extends Fragment {
         sendMessageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MessageFragment messageFragment = new MessageFragment(getContext(), rider);
+                MessageFragment messageFragment = new MessageFragment(getContext(), rider, currentUser);
                 ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragmentFrame, messageFragment)
                         .commit();

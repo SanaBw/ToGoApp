@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.sanida.togoapp.Fragments.RiderProfileFragment;
+import com.example.sanida.togoapp.Models.User;
 import com.example.sanida.togoapp.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,6 +36,7 @@ class RidersAdapter extends RecyclerView.Adapter<RidersAdapter.ViewHolder> {
     private LayoutInflater layoutInflater;
     private ArrayList<Object> ridersArray;
     private String riderId;
+    private User currentUserModel;
 
 
     public RidersAdapter(Context context, HashMap<String, Object> riders) {
@@ -64,7 +66,7 @@ class RidersAdapter extends RecyclerView.Adapter<RidersAdapter.ViewHolder> {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    RiderProfileFragment riderProfileFragment = new RiderProfileFragment(riderId);
+                    RiderProfileFragment riderProfileFragment = new RiderProfileFragment(riderId, currentUserModel);
                     ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
                             .replace(R.id.fragmentFrame, riderProfileFragment)
                             .commit();
@@ -79,6 +81,7 @@ class RidersAdapter extends RecyclerView.Adapter<RidersAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull RidersAdapter.ViewHolder holder, int position) {
         riderId = ridersArray.get(position).toString();
+        currentUserModel=TripAdapter.getUserModel(riderId);
 
         TripAdapter.fetchUserData(context, riderId, holder.riderName, holder.riderPhoto);
     }

@@ -68,13 +68,13 @@ public class AllMessagesFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
-                        if (postSnapShot.child("reciever").child("id").getValue().equals(currentUser)) {
+                        if (postSnapShot.child("receiver").child("id").getValue().equals(currentUser)) {
                             user = postSnapShot.child("sender").getValue(User.class);
                         } else if (postSnapShot.child("sender").child("id").getValue().equals(currentUser)) {
-                            user = postSnapShot.child("reciever").getValue(User.class);
+                            user = postSnapShot.child("receiver").getValue(User.class);
                         }
 
-                        if (postSnapShot.child("reciever").child("id").getValue().equals(currentUser) || postSnapShot.child("sender").child("id").getValue().equals(currentUser)) {
+                        if (postSnapShot.child("receiver").child("id").getValue().equals(currentUser) || postSnapShot.child("sender").child("id").getValue().equals(currentUser)) {
                             if (!alreadyAdded(user)){
                                 allChatters.add(user);
                                 System.out.println("Added + " + user.getEmail());
@@ -98,9 +98,6 @@ public class AllMessagesFragment extends Fragment {
     private boolean alreadyAdded(User user){
         boolean added=false;
             for (User chatter:allChatters){
-                System.out.println("USER EMAIL " + user.getEmail());
-                System.out.println("CHATTER EMAIL " + chatter.getEmail());
-                System.out.println("EQUAL:" + chatter.getEmail().equals(user.getEmail()));
                 if (chatter.getEmail().equals(user.getEmail())){
                     added = true;
                     break;

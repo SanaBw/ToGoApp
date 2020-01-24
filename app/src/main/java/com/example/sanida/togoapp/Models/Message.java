@@ -4,10 +4,10 @@ public class Message {
 
     public Message(){}
 
-    public Message(long id, User sender, User reciever, String date, String time, String content) {
+    public Message(long id, User sender, User receiver, String date, String time, String content) {
         this.id = id;
         this.sender = sender;
-        this.receiver = reciever;
+        this.receiver = receiver;
         this.date = date;
         this.time = time;
         this.content = content;
@@ -38,8 +38,8 @@ public class Message {
         return receiver;
     }
 
-    public void setReceiver(User reciever) {
-        this.receiver = reciever;
+    public void setReceiver(User receiver) {
+        this.receiver = receiver;
     }
 
     public String getDate() {

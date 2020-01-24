@@ -302,7 +302,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
         profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RiderProfileFragment riderProfileFragment = new RiderProfileFragment(trip.getUser().getId());
+                RiderProfileFragment riderProfileFragment = new RiderProfileFragment(trip.getUser().getId(), currentUserModel);
                 ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragmentFrame, riderProfileFragment)
                         .commit();
@@ -314,7 +314,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
         messageUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MessageFragment messageFragment = new MessageFragment(context, trip.getUser());
+                MessageFragment messageFragment = new MessageFragment(context, trip.getUser(), currentUserModel);
                 ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragmentFrame, messageFragment)
                         .commit();
@@ -370,8 +370,9 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
     private void requestSeat(Trip trip) {
         User owner = trip.getUser();
         User rider = currentUserModel;
-        String requestId = UUID.randomUUID().toString();
+        String requestId = owner.getId()+rider.getId()+trip.getTripId();
         Request request = new Request(requestId, owner, rider, trip);
+
         FirebaseDatabase.getInstance().getReference().child("/requests").child(requestId).setValue(request);
     }
 }

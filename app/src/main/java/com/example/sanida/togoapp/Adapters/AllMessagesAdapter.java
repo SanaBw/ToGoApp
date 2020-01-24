@@ -27,6 +27,7 @@ public class AllMessagesAdapter extends RecyclerView.Adapter<AllMessagesAdapter.
     private ArrayList<User> allChatters;
     private LayoutInflater layoutInflater;
     private String currentUser;
+    private User currentUserModel;
 
     public AllMessagesAdapter(Context context, ArrayList<User> allChatters) {
         layoutInflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -40,6 +41,7 @@ public class AllMessagesAdapter extends RecyclerView.Adapter<AllMessagesAdapter.
     public AllMessagesAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View rootView = layoutInflater.inflate(R.layout.chat, parent, false);
         currentUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        currentUserModel = TripAdapter.getUserModel(currentUser);
 
         return new AllMessagesAdapter.ViewHolder(rootView);
     }
@@ -65,7 +67,7 @@ public class AllMessagesAdapter extends RecyclerView.Adapter<AllMessagesAdapter.
     }
 
     private void openChat(View view, User user) {
-        MessageFragment messageFragment = new MessageFragment(context, user);
+        MessageFragment messageFragment = new MessageFragment(context, user, currentUserModel);
         ((FragmentActivity) view.getContext()).getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragmentFrame, messageFragment)
                 .commit();
