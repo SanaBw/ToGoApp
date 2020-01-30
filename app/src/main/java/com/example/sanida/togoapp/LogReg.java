@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -33,10 +34,12 @@ public class LogReg extends AppCompatActivity {
 
     private EditText logEmail, logPassword, name, email, password;
     private String userEmail, newUserName, newUserEmail;
+    private Button showPw, showPw2;
     private FirebaseAuth auth = FirebaseAuth.getInstance();
     private DatabaseReference dbRef;
     private ViewFlipper viewFlipper;
     private ProgressBar progressBar;
+    private Boolean pwIsShowing,pw2IsShowing;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,8 @@ public class LogReg extends AppCompatActivity {
         TextView reglog = findViewById(R.id.reglogText);
         Button logIn = findViewById(R.id.logBtn);
         Button register = findViewById(R.id.regBtn);
+        pwIsShowing = false;
+        pw2IsShowing = false;
 
         dbRef = FirebaseDatabase.getInstance().getReference().child("users");
         viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper);
@@ -58,6 +63,8 @@ public class LogReg extends AppCompatActivity {
         password = findViewById(R.id.pwText);
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
+        showPw = findViewById(R.id.showPw);
+        showPw2 = findViewById(R.id.showPw2);
 
         if (auth.getCurrentUser() != null) {
             Intent i = new Intent(LogReg.this, MainScreen.class);
@@ -99,6 +106,36 @@ public class LogReg extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 resetUserPw();
+            }
+        });
+
+        showPw.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!pwIsShowing) {
+                    pwIsShowing = true;
+                    logPassword.setTransformationMethod(null);
+                    showPw.setBackgroundResource(R.drawable.lock);
+                } else {
+                    pwIsShowing = false;
+                    logPassword.setTransformationMethod(new PasswordTransformationMethod());
+                    showPw.setBackgroundResource(R.drawable.unlock);
+                }
+            }
+        });
+
+        showPw2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!pw2IsShowing) {
+                    pw2IsShowing = true;
+                    password.setTransformationMethod(null);
+                    showPw2.setBackgroundResource(R.drawable.lock);
+                } else {
+                    pw2IsShowing = false;
+                    password.setTransformationMethod(new PasswordTransformationMethod());
+                    showPw2.setBackgroundResource(R.drawable.unlock);
+                }
             }
         });
     }
@@ -210,7 +247,7 @@ public class LogReg extends AppCompatActivity {
         Map<String, Object> newUser = new HashMap<>();
         newUser.put("name", name);
         newUser.put("email", email);
-        newUser.put("id",id);
+        newUser.put("id", id);
 
         dbRef.child(currentUser.getUid()).setValue(newUser).addOnFailureListener(new OnFailureListener() {
             @Override

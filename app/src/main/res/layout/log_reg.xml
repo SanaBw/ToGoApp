@@ -93,6 +93,16 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/logPwText" />
 
+        <Button
+            android:id="@+id/showPw"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="3dp"
+            android:background="@drawable/unlock"
+            app:layout_constraintEnd_toEndOf="@+id/logPwText"
+            app:layout_constraintTop_toTopOf="@+id/logPwText" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -190,6 +200,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/showPw2"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="3dp"
+            android:background="@drawable/unlock"
+            app:layout_constraintEnd_toEndOf="@+id/pwText"
+            app:layout_constraintTop_toTopOf="@+id/pwText" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

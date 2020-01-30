@@ -56,6 +56,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
     private Context context;
     private LayoutInflater layoutInflater;
     private ArrayList<Trip> trips, filteredTrips;
+    private ArrayList<Request> allRequests;
     private String currentUser;
     public static User currentUserModel;
     public static PopupWindow infoPopup, tripPopup;
@@ -68,6 +69,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
         currentUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
         filteredTrips = new ArrayList<>();
         isAlreadyRequested = false;
+        allRequests = new ArrayList<>();
         this.context = context;
         this.trips = trips;
         this.filteredTrips.addAll(trips);
@@ -104,15 +106,19 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (trip.getUser().getId().equals(currentUserModel.getId())) {
-                        NewTripFragment newTripFragment = new NewTripFragment();
-                        ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragmentFrame, newTripFragment)
-                                .commit();
+                    if (trip.getRiders()==null){
+                        if (trip.getUser().getId().equals(currentUserModel.getId())) {
+                            NewTripFragment newTripFragment = new NewTripFragment();
+                            ((FragmentActivity) v.getContext()).getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.fragmentFrame, newTripFragment)
+                                    .commit();
 
-                        newTripFragment.editMyTrip(trip);
+                            newTripFragment.editMyTrip(trip);
+                        } else {
+                            openTrip(trip);
+                        }
                     } else {
-                        openTrip(trip);
+                        Toast.makeText(context, "You can't edit this trip because you have passengers", Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -152,6 +158,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
         }
 
         fetchUserData(context, trip.getUser().getId(), holder.tripUser,  holder.userImg);
+        fetchRequests();
         currentUserModel = getUserModel(currentUser);
     }
 
@@ -188,6 +195,27 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
 
                         if (Objects.equals(postSnapShot.getKey(), "name")) {
                             textView.setText(Objects.requireNonNull(postSnapShot.getValue()).toString());
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        }));
+    }
+
+
+    public void fetchRequests(){
+        FirebaseDatabase.getInstance().getReference().child("/requests").addValueEventListener((new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
+                        Request request = postSnapShot.getValue(Request.class);
+                        if (request != null) {
+                            allRequests.add(request);
                         }
                     }
                 }
@@ -242,7 +270,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
         View layout = inflater.inflate(R.layout.trip_info, null);
         TextView carInfoTxt = layout.findViewById(R.id.carInfoTxt);
         RecyclerView ridersRecView = layout.findViewById(R.id.ridersProfile);
-        String text = "Car info: " + trip.getCarInfo();
+        String text = trip.getCarInfo();
         ConstraintLayout background = layout.findViewById(R.id.backPopup);
 
         infoPopup = new PopupWindow(layout, ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT);
@@ -274,23 +302,28 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
 
 
     private void openTrip(final Trip trip) {
+
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.trip_popup, null);
-        final Button messageUser, reserve, profile;
+        final Button messageUser, profileBtn, reserveBtn;
+        final TextView profile, reserveTxt;
         ConstraintLayout background = layout.findViewById(R.id.backPopup);
 
 
         tripPopup = new PopupWindow(layout, ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT);
         messageUser = layout.findViewById(R.id.messageUserBtn);
-        reserve = layout.findViewById(R.id.reserveBtn);
-        profile = layout.findViewById(R.id.profileBtn);
+        reserveBtn = layout.findViewById(R.id.reserveBtn);
+        profileBtn = layout.findViewById(R.id.profileBtn);
+        reserveTxt = layout.findViewById(R.id.seatTxt);
+        profile = layout.findViewById(R.id.profileTxt);
         profile.setText(trip.getUser().getName() + "'s profile");
 
-        if (!alreadyRequested(currentUserModel, trip)) {
-            reserve.setVisibility(View.VISIBLE);
+        if (!alreadyRequested(currentUserModel, trip) && !alreadyReserved(currentUser, trip)) {
+            reserveBtn.setVisibility(View.VISIBLE);
+            reserveTxt.setVisibility(View.VISIBLE);
         }
 
-        reserve.setOnClickListener(new View.OnClickListener() {
+        reserveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 requestSeat(trip);
@@ -299,7 +332,7 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
             }
         });
 
-        profile.setOnClickListener(new View.OnClickListener() {
+        profileBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 RiderProfileFragment riderProfileFragment = new RiderProfileFragment(trip.getUser().getId(), currentUserModel);
@@ -337,32 +370,31 @@ public class TripAdapter extends RecyclerView.Adapter<TripAdapter.ViewHolder> {
         });
     }
 
+    private boolean alreadyReserved(String currentUser, Trip trip) {
+        HashMap<String, Object> riders = trip.getRiders();
+
+        if (riders!=null){
+            return riders.containsValue(currentUser);
+        } else {
+            return false;
+        }
+
+    }
+
 
     private boolean alreadyRequested(final User rider, final Trip trip) {
-        FirebaseDatabase.getInstance().getReference().child("/requests").addValueEventListener((new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    for (DataSnapshot postSnapShot : dataSnapshot.getChildren()) {
-                        Request request = postSnapShot.getValue(Request.class);
-                        if (request != null) {
-                            if (request.getRider().getId()
-                                    .equals(rider.getId()) &&
-                                    request.getTrip().getTripId().equals(trip.getTripId())) {
-                                isAlreadyRequested = true;
-                            } else {
-                                isAlreadyRequested = false;
-                            }
-                        }
-                    }
-                }
-            }
+        User owner = trip.getUser();
+        String requestId = owner.getId()+rider.getId()+trip.getTripId();
+        Request request = new Request(requestId, owner, rider, trip);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+        for (Request req:allRequests){
+            if (req.getId().equals(requestId)){
+                isAlreadyRequested=true;
+                break;
+            } else {
+                isAlreadyRequested=false;
             }
-        }));
-
+        }
         return isAlreadyRequested;
     }
 

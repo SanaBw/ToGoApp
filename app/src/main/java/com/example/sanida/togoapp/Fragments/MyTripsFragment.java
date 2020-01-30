@@ -89,7 +89,7 @@ public class MyTripsFragment extends Fragment {
 
 
         getAllMyTrips();
-        enableSwipeToDelete();
+        enableSwipe();
 
         addTripBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -172,7 +172,7 @@ public class MyTripsFragment extends Fragment {
 
 
 
-    private void enableSwipeToDelete() {
+    private void enableSwipe() {
 
         SwipeCallback swipeCallback = new SwipeCallback(adapter, context) {
             @Override
@@ -197,7 +197,7 @@ public class MyTripsFragment extends Fragment {
                                     snackbar.show();
                                     return;
                                 }
-                            }).setNegativeButton("BACK", new DialogInterface.OnClickListener() {  //not removing items if cancel is done
+                            }).setNegativeButton("NO", new DialogInterface.OnClickListener() {  //not removing items if cancel is done
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     adapter.notifyItemRemoved(position + 1);
@@ -221,7 +221,7 @@ public class MyTripsFragment extends Fragment {
                                     snackbar.show();
                                     return;
                                 }
-                            }).setNegativeButton("BACK", new DialogInterface.OnClickListener() {  //not removing items if cancel is done
+                            }).setNegativeButton("NO", new DialogInterface.OnClickListener() {  //not removing items if cancel is done
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     adapter.notifyItemRemoved(position + 1);
@@ -235,6 +235,7 @@ public class MyTripsFragment extends Fragment {
                     } else if (direction == ItemTouchHelper.LEFT) {
                         drawable = ContextCompat.getDrawable(context, R.drawable.info);
                         TripAdapter.seeTripInfo(trips.get(position),context);
+                        adapter.notifyDataSetChanged();
 
 
                     }

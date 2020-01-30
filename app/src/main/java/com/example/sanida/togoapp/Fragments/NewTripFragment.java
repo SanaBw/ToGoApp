@@ -1,5 +1,6 @@
 package com.example.sanida.togoapp.Fragments;
 
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -9,10 +10,14 @@ import androidx.fragment.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import com.example.sanida.togoapp.Models.User;
 import com.example.sanida.togoapp.R;
@@ -26,6 +31,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -43,29 +50,67 @@ public class NewTripFragment extends Fragment {
     private Boolean editing;
     private FragmentTransaction ft;
     private SimpleDateFormat format;
+    private ViewFlipper viewFlipper;
+    private View.OnClickListener flip, back;
+    private DatePicker datePicker;
+    private TimePicker timePicker;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_new_trip, container, false);
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         TextView title = v.findViewById(R.id.title);
         Button saveBtn = v.findViewById(R.id.saveBtn);
         Button deleteBtn = v.findViewById(R.id.deleteBtn);
+        Button next1 = v.findViewById(R.id.nextBtn1);
+        Button next2 = v.findViewById(R.id.nextBtn2);
+        Button next3 = v.findViewById(R.id.nextBtn3);
+        Button back2 = v.findViewById(R.id.backBtn2);
+        Button back3 = v.findViewById(R.id.backBtn3);
+        Button back4 = v.findViewById(R.id.backBtn4);
+        Calendar calendar = Calendar.getInstance();
+
+        datePicker = v.findViewById(R.id.datePicker);
+        timePicker = v.findViewById(R.id.timePicker);
+
+        flip = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewFlipper.showNext();
+            }
+        };
+        back = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewFlipper.showPrevious();
+            }
+        };
+
+        datePicker.setMinDate(calendar.getTimeInMillis());
+
+        next1.setOnClickListener(flip);
+        next2.setOnClickListener(flip);
+        next3.setOnClickListener(flip);
+
+        back2.setOnClickListener(back);
+        back3.setOnClickListener(back);
+        back4.setOnClickListener(back);
+
         FirebaseAuth auth = FirebaseAuth.getInstance();
 
+        viewFlipper = v.findViewById(R.id.viewFlipper);
         tripNameTxt = v.findViewById(R.id.tripNameTxt);
         startTxt = v.findViewById(R.id.startTxt);
         endTxt = v.findViewById(R.id.endTxt);
-        dateTxt = v.findViewById(R.id.dateTxt);
-        timeTxt = v.findViewById(R.id.timeTxt);
         carInfoTxt = v.findViewById(R.id.carInfoTxt);
         seatsTxt = v.findViewById(R.id.seatsTxt);
         drivingBox = v.findViewById(R.id.drivingBox);
         costTxt = v.findViewById(R.id.costTxt);
         editing = false;
         dbRef = FirebaseDatabase.getInstance().getReference().child("/trips");
-        format = new SimpleDateFormat("dd-MM-yyyy");
         ft = getActivity().getSupportFragmentManager().beginTransaction();
+
 
         if (editableTrip != null) {
             editing = true;
@@ -74,8 +119,6 @@ public class NewTripFragment extends Fragment {
             tripNameTxt.setText(editableTrip.getTripName());
             startTxt.setText(editableTrip.getStartLocation());
             endTxt.setText(editableTrip.getEndLocation());
-            dateTxt.setText(editableTrip.getDate());
-            timeTxt.setText(editableTrip.getTime());
             carInfoTxt.setText(editableTrip.getCarInfo());
             seatsTxt.setText(String.valueOf(editableTrip.getSeats()));
 
@@ -118,6 +161,7 @@ public class NewTripFragment extends Fragment {
         return v;
     }
 
+
     private void deleteTrip() {
         FirebaseDatabase.getInstance().getReference().child("/trips").child(editableTrip.getTripId()).removeValue();
         Toast.makeText(getContext(), "Trip deleted!", Toast.LENGTH_LONG).show();
@@ -135,8 +179,16 @@ public class NewTripFragment extends Fragment {
         String tripName = tripNameTxt.getText().toString();
         String startLocation = startTxt.getText().toString();
         String endLocation = endTxt.getText().toString();
-        String date = dateTxt.getText().toString();
-        String time = timeTxt.getText().toString();
+         String date = datePicker.getDayOfMonth() + "-" + (datePicker.getMonth()+1) + "-" + datePicker.getYear();
+        String time;
+
+        if (Build.VERSION.SDK_INT < 23) {
+            time = timePicker.getCurrentHour() + ":" + timePicker.getCurrentMinute();
+
+        } else {
+            time = timePicker.getHour() + ":" + timePicker.getMinute();
+        }
+
         String carInfo = carInfoTxt.getText().toString();
         Boolean driving = drivingBox.isChecked();
 
@@ -158,10 +210,6 @@ public class NewTripFragment extends Fragment {
 
         if (tripName.equals("") || startLocation.equals("") || endLocation.equals("") || date.equals("") || time.equals("") || carInfo.equals("") || seats == 0) {
             Toast.makeText(getContext(), "Please fill out every field.", Toast.LENGTH_LONG).show();
-        } else if (!isValidDate(date)) {
-            Toast.makeText(getContext(), "Date not valid!", Toast.LENGTH_LONG).show();
-        } else if (!isValidTime(time)) {
-            Toast.makeText(getContext(), "Time not valid!", Toast.LENGTH_LONG).show();
         } else {
             Trip trip = new Trip(tripId, tripName, startLocation, endLocation, date, time, carInfo, seats, driving, user, cost);
             dbRef.child(tripId).setValue(trip.toMap());
@@ -178,21 +226,4 @@ public class NewTripFragment extends Fragment {
     }
 
 
-    private boolean isValidTime(String time) {
-        if (Pattern.matches("([01]?[0-9]|2[0-3]):[0-5][0-9]", time)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-
-    private boolean isValidDate(String input) {
-        try {
-            format.parse(input);
-            return true;
-        } catch (ParseException e) {
-            return false;
-        }
-    }
 }
